@@ -1,3 +1,4 @@
+<html lang="en">
 <title>David Gosal — Full-Stack Developer</title>
 
 <style>
@@ -322,6 +323,20 @@
   .sec-head h2 { font-size: clamp(1.5rem, 3.3vw, 2rem); max-width: 24ch; }
   .sec-head p { color: var(--muted); }
   .body-text strong { color: var(--fg-strong); font-weight: 650; }
+
+  /* Justified running prose. `hyphens: auto` is not decoration here: justifying
+     a measure this wide without it opens rivers of white space between words,
+     which reads worse than any ragged edge. It needs a language to pick a
+     dictionary, which is why the document carries lang="en".
+     Deliberately not justified: table cells, the small uppercase exhibit
+     captions, and anything already centred — justification needs several lines
+     to have any effect, and on one short line it only risks looking broken. */
+  .standfirst, .body-text, .sec-head p, .callout,
+  ul.ticks li, .shot figcaption, .panel p, .demo-note, .footer p {
+    text-align: justify;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+  }
   h3.sub { font-size: 1.12rem; letter-spacing: -.015em; }
 
   /* ===================================================================
@@ -2031,32 +2046,64 @@
         <h2>Three that took real thought</h2>
       </div>
 
-      <h3 class="sub">One transaction, three modules, and a retry</h3>
+      <h3 class="sub">One transaction, three modules — and what happens when it is sent twice</h3>
       <p class="body-text">
-        Posting a goods receipt writes into all three modules in a fixed order: the
-        receipt header, then the stock ledger rows, then the journal entry. The
-        order is load-bearing — the entry is valued from what the ledger rows
-        recorded — so it has its own test, because a refactor that reordered it
-        would still pass every other test in the suite.
+        Posting a goods receipt writes three things: the receipt itself, the stock
+        ledger rows, and the journal entry. All three happen in one transaction, in
+        that order, and the order matters — the journal entry is valued from what
+        the ledger rows recorded, so it cannot be written first. That ordering has
+        a test of its own, because a refactor that shuffled it would still pass
+        every other test in the suite.
       </p>
       <p class="body-text">
-        The retry is the harder half. A receipt posted from a warehouse on a bad
-        connection gets submitted twice, and nothing in the schema distinguishes
-        the duplicate from a genuine second delivery of the same goods. So the form
-        generates an idempotency key <strong>when the screen mounts</strong>, not
-        when the button is pressed: both attempts carry the same key, and the
-        second replays the first's result rather than receiving the goods again.
+        The harder problem is the retry. Somebody receives a delivery on a phone at
+        the warehouse door, the connection drops before the answer comes back, and
+        they press the button again. Two identical requests arrive. Nothing in the
+        data tells them apart from a real second delivery of the same goods —
+        <em>the supplier sent another eighty boxes</em> is an ordinary thing to
+        record, and it looks exactly the same.
       </p>
       <p class="body-text">
-        Two reads catch nearly every replay. The last narrow window — a twin that
-        commits between the second read and the insert — is closed with a savepoint
-        around the header insert and its document-number allocation. On a
-        unique-key collision the savepoint rolls back, the allocated
-        <span class="mono">GR</span> number is handed back rather than burned, and
-        the original receipt is returned. Without the savepoint that failed insert
-        would poison the entire transaction, and every retry would leave a
-        permanent gap in the workspace's receipt numbering.
+        So the form stamps each attempt with a one-off id — an
+        <strong>idempotency key</strong> — created <strong>when the screen
+        opens</strong>, not when the button is pressed. A resubmit therefore
+        carries the <em>same</em> key as the first try, which is what lets the
+        server recognise it as the same act rather than a new one. Generating the
+        key on the press would give the two attempts different keys and defeat the
+        entire mechanism.
       </p>
+      <p class="body-text">
+        The server then checks that key three times. Each check is there because
+        the one before it can miss:
+      </p>
+      <ul class="ticks">
+        <li><strong>Before doing anything else.</strong> This catches the ordinary case — the first request finished, and the user pressed the button again.</li>
+        <li><strong>Again, after locking the order lines.</strong> A retry already in flight can finish while this request is waiting for that lock. Without the second look, this request would then measure the delivery against quantities its own duplicate had just recorded, and reject it as an over-receipt — telling somebody to go and correct a quantity that was in fact recorded perfectly a moment earlier. A test is named for this case, and it failed on exactly that misleading error before the second check existed.</li>
+        <li><strong>At the insert itself.</strong> A unique constraint on the key has the last word, for a duplicate that commits in the sliver of time between the second check and this write.</li>
+      </ul>
+      <p class="body-text">
+        That third one needs care, and it is where the savepoint comes in. In
+        PostgreSQL a statement that fails normally takes the whole transaction down
+        with it — so once the insert is rejected, you can no longer use that
+        transaction to go and fetch the receipt the duplicate created, which is the
+        one thing you now want to do. The insert is therefore wrapped in a
+        <strong>savepoint</strong>: an undo point <em>inside</em> the transaction.
+        When the constraint fires, the code rewinds to that point rather than
+        losing the transaction, reads the original receipt, and returns it.
+      </p>
+      <p class="body-text">
+        The savepoint covers the receipt-number allocation as well, so the number
+        the rejected attempt had claimed is handed back instead of being spent.
+        Otherwise every retry would leave a permanent hole in that workspace's
+        receipt numbering — <span class="mono">GR-0004</span>,
+        <span class="mono">GR-0007</span>, and nothing to explain where the ones in
+        between went.
+      </p>
+      <div class="callout">
+        What the person at the warehouse door sees is one line:
+        <span class="mono">GR-202607-0005 had already been posted.</span> Their
+        delivery was counted once.
+      </div>
 
       <h3 class="sub">You cannot approve your own work — including as the admin</h3>
       <p class="body-text">
