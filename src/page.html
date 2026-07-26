@@ -533,6 +533,12 @@
   .nav-project { display: none; }
   body[data-view="project"] .nav-project { display: flex; gap: 1.1rem; align-items: center; flex-wrap: wrap; }
   body[data-view="project"] .nav-home { display: none; }
+  /* One nav per project, selected the same way the views themselves are: the
+     router stamps data-active on both, so there is one mechanism, not two.
+     Without this every project would share the first project's section links —
+     and since section IDs are namespaced per project, those links would scroll
+     to a hidden section. */
+  body[data-view="project"] .nav-project[data-active="false"] { display: none; }
 
   /* ---- home hero: a restrained masthead, not a manifesto ---- */
   .home-hero {
@@ -655,13 +661,24 @@
       <a href="#projects">Projects</a>
       <a href="mailto:dgjy2019@gmail.com">Contact</a>
     </nav>
-    <nav class="topbar-nav nav-project">
+    <nav class="topbar-nav nav-project" data-nav-for="lw-sports">
       <a href="#home">← All projects</a>
       <a href="#tour">Product</a>
       <a href="#scope">Scope</a>
       <a href="#ownership">Ownership</a>
       <a href="#architecture">Architecture</a>
       <a class="live" href="https://sportclub-6d9de.firebaseapp.com/login" target="_blank" rel="noopener">Live ↗</a>
+    </nav>
+    <!-- mini-erp has no live URL to offer: the API is not hosted, so the
+         deployed frontend stops at its login screen. The repository is the
+         honest destination for this slot. -->
+    <nav class="topbar-nav nav-project" data-nav-for="mini-erp">
+      <a href="#home">← All projects</a>
+      <a href="#erp-tour">Product</a>
+      <a href="#erp-scope">Scope</a>
+      <a href="#erp-architecture">Architecture</a>
+      <a href="#erp-status">Status</a>
+      <a class="live" href="https://github.com/Nimrod-DG/mini-erp" target="_blank" rel="noopener">Repo ↗</a>
     </nav>
   </div>
 </header>
@@ -681,7 +698,7 @@
     <div class="grid-head">
       <h2>Selected work</h2>
       <div class="carousel-controls">
-        <span class="count">1 project</span>
+        <span class="count">2 projects</span>
         <div class="carousel-nav" data-carousel-nav>
           <button type="button" data-carousel-prev aria-label="Previous projects">←</button>
           <button type="button" data-carousel-next aria-label="Next projects">→</button>
@@ -699,6 +716,19 @@
             <p>A sports community platform where a match slot is an asset players buy, sell and transfer.</p>
             <div class="card-tags">
               <span class="pos">react</span><span class="pos">node</span><span class="pos">mongodb</span><span class="pos">cloud-run</span>
+            </div>
+            <span class="card-cta">View case study →</span>
+          </div>
+        </a>
+
+        <a class="project-card" href="#project-mini-erp" data-project-link="mini-erp">
+          <div class="thumb"><img src="{{IMG:erp-01-receipt-confirmation}}" alt="mini-erp — the confirmation panel after posting a goods receipt, naming the stock ledger rows and the journal entry written in the same transaction." loading="lazy"></div>
+          <div class="card-body">
+            <p class="card-eyebrow">Backend · case study <span class="pill partial">Deploy-ready</span></p>
+            <h3>mini-erp</h3>
+            <p>A multi-tenant ERP where tenant isolation is enforced by the database, not by application code.</p>
+            <div class="card-tags">
+              <span class="pos">go</span><span class="pos">postgres</span><span class="pos">rls</span><span class="pos">react</span>
             </div>
             <span class="card-cta">View case study →</span>
           </div>
@@ -1322,6 +1352,839 @@
 </div>
 </div><!-- /#project-lw-sports -->
 
+<!-- ======================= PROJECT: MINI-ERP =======================
+     Section IDs are namespaced `erp-*`. They must be: getElementById
+     returns the first match in document order, so an id reused from the
+     case study above would scroll the nav to a hidden section.
+     ================================================================== -->
+<div class="project-view" id="project-mini-erp" data-project="mini-erp">
+  <div class="wrap"><a class="backlink" href="#home">← All projects</a></div>
+
+<!-- ================================================================= -->
+<section class="header">
+  <div class="wrap stack">
+    <p class="eyebrow rise">Backend case study · solo build</p>
+    <h1 class="rise">A multi-tenant ERP where isolation is the database's job, not the code's.</h1>
+    <p class="standfirst rise">
+      mini-erp runs procurement, inventory and finance for more than one company
+      out of a single deployment. Every tenant-scoped query executes inside a
+      transaction that has told PostgreSQL who is asking, and fourteen tables
+      carry a row-level security policy that returns nothing when it hasn't been
+      told. The feature that pays for that architecture is
+      <strong>one transaction spanning all three modules</strong>: posting a
+      goods receipt writes the receipt, the stock ledger rows and a balanced
+      journal entry — or none of them.
+    </p>
+
+    <div class="btn-row rise">
+      <a class="btn btn-primary" href="https://github.com/Nimrod-DG/mini-erp" target="_blank" rel="noopener">
+        View the repository ↗
+      </a>
+      <a class="btn btn-ghost" href="#erp-tour">See the screens</a>
+    </div>
+
+    <dl class="meta rise">
+      <!-- .meta dd truncates rather than wraps, by deliberate design upstream —
+           so every value here is kept short enough to survive the 4-up grid. -->
+      <div><dt>Role</dt><dd>Solo — schema to deploy</dd></div>
+      <div><dt>Stack</dt><dd>Go · PostgreSQL · React</dd></div>
+      <div><dt>Tests</dt><dd>376 backend · 102 web</dd></div>
+      <div><dt>Status</dt><dd>Deploy-ready</dd></div>
+    </dl>
+
+    <figure class="shot rise" style="margin-top: 1rem;">
+      <div class="shot-frame">
+        <div class="shot-bar">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="route">/procurement/orders/:id/receive</span>
+        </div>
+        <img src="{{IMG:erp-01-receipt-confirmation}}" alt="Confirmation panel after posting goods receipt GR-202607-0005: two stock ledger entries created in warehouse GP, and journal entry JE-202607-0005 posted, debit Inventory 1,405,000.00 against credit Goods received not invoiced 1,405,000.00." loading="lazy">
+      </div>
+      <figcaption>
+        <b>One receipt, three modules, one transaction.</b> The panel names what
+        was written and links to both halves — the stock ledger rows in Inventory
+        and the balanced journal entry in Finance. The two amounts match because
+        they are the same write. Either all of it landed or none of it did.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="erp-context">
+  <div class="wrap">
+    <div class="col stack">
+      <div class="sec-head">
+        <p class="eyebrow">The problem</p>
+        <h2>Multi-tenancy fails quietly, which is what makes it hard</h2>
+      </div>
+
+      <p class="body-text">
+        A multi-tenant application keeps several companies' records in the same
+        tables and is trusted never to show one company another's. The usual
+        implementation is a <span class="mono">WHERE tenant_id = ?</span> on every
+        query. It works right up until somebody writes the one query that forgets
+        it — and then nothing breaks. No error is raised, no alert fires. A screen
+        simply renders rows belonging to somebody else, and the first person to
+        notice is a customer.
+      </p>
+
+      <p class="body-text">
+        The trouble with the convention is that it <em>is</em> a convention.
+        Correctness rests on every developer remembering it on every query,
+        forever, including the one added under pressure late on a Friday. There is
+        nowhere to stand and say <strong>this is enforced</strong> — only a habit,
+        and a code review that has to catch every instance of it.
+      </p>
+
+      <p class="body-text">
+        mini-erp moves the check underneath the application. A handler that
+        forgets its tenant filter returns <strong>zero rows</strong>, because the
+        database decides what a connection is allowed to see. Forgetting produces
+        an obviously empty screen instead of a silent leak — a failure mode you
+        find in development rather than in an incident report.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="erp-tour">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">The product</p>
+      <h2>What it looks like in use</h2>
+      <p>
+        The application running locally against the same seeded dataset that is
+        loaded into the production database. Two demo workspaces —
+        <span class="mono">Nusantara Retail</span> (Asia/Jakarta, all three
+        modules) and <span class="mono">Bahari Logistics</span> (Asia/Makassar, no
+        Finance) — and the contrast between them is what several of these screens
+        are showing. Both companies and everyone in them are fictional.
+      </p>
+    </div>
+
+    <div class="stack" style="gap: 2.4rem;">
+
+      <h3 class="sub">The write that spans three modules</h3>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/procurement/orders/:id/receive</span>
+          </div>
+          <img src="{{IMG:erp-07-receive-form}}" alt="The receive-goods form before posting: two order lines with outstanding quantities, and a panel stating that this will record two lines, add stock to warehouse GP and post one balanced journal entry, all in one transaction." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Before posting.</b> The panel on the right states what the button
+          will do — record the lines, add stock to the receiving warehouse, post
+          one balanced journal entry — and that all of it happens in a single
+          transaction. The line under the button is the retry contract: the form
+          carries an idempotency key generated when the screen mounted, so a
+          resubmitted receipt replays rather than receiving the goods twice.
+        </figcaption>
+      </figure>
+
+      <div class="shot-grid">
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/inventory/ledger?sourceId=…</span>
+            </div>
+            <img src="{{IMG:erp-11-ledger-filtered}}" alt="Stock ledger filtered to one goods receipt, showing two entries: PKG-BOX-L plus 80 and HND-GLOVE plus 30, both in warehouse GP." loading="lazy">
+          </div>
+          <figcaption>
+            <b>What Inventory recorded.</b> The confirmation panel's first link.
+            Two rows, <span class="mono">+80</span> and <span class="mono">+30</span>,
+            each carrying its unit cost and the receipt that caused it. The ledger
+            is append-only — <span class="mono">UPDATE</span> and
+            <span class="mono">DELETE</span> are revoked from the application role,
+            so a correction is a new row.
+          </figcaption>
+        </figure>
+
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/finance?sourceId=…</span>
+            </div>
+            <img src="{{IMG:erp-16-finance-filtered}}" alt="Finance journal filtered to the same goods receipt, showing journal entry JE-202607-0005: debit 1300 Inventory 1,405,000.00, credit 2150 Goods received not invoiced 1,405,000.00." loading="lazy">
+          </div>
+          <figcaption>
+            <b>What Finance recorded.</b> The panel's second link, and the same
+            document. One entry, debit Inventory against credit Goods received not
+            invoiced, for the value the ledger rows just booked. The two sides
+            balance because a database constraint requires it, not because the
+            service that wrote them was careful.
+          </figcaption>
+        </figure>
+      </div>
+
+      <h3 class="sub">Procurement</h3>
+
+      <div class="shot-grid">
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/procurement/orders</span>
+            </div>
+            <img src="{{IMG:erp-05-orders}}" alt="Purchase order list showing open, partly received, received and cancelled orders, each with a received-of-ordered ratio." loading="lazy">
+          </div>
+          <figcaption>
+            <b>Purchase orders.</b> All four states an order can hold. The received
+            column is a ratio against what was ordered — and it is computed on
+            read, never stored.
+          </figcaption>
+        </figure>
+
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/procurement/orders/:id</span>
+            </div>
+            <img src="{{IMG:erp-06-order-detail}}" alt="Purchase order detail: per-line ordered, received and outstanding quantities, and a progress panel reading 70 of 200 received across 2 lines, counted from the goods receipts themselves." loading="lazy">
+          </div>
+          <figcaption>
+            <b>One order.</b> Received against ordered, per line. The panel says
+            where the number comes from — <em>counted from the goods receipts
+            themselves, not from a running total on the order</em>. There is no
+            counter column, so there is nothing that can drift.
+          </figcaption>
+        </figure>
+      </div>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/procurement/requisitions</span>
+          </div>
+          <img src="{{IMG:erp-02-requisitions}}" alt="Requisition list with status chips for draft, submitted, approved, rejected and cancelled; approved rows show the purchase order they produced." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Requisitions.</b> The five states a requisition can hold. An approved
+          one carries the purchase order it produced underneath its number —
+          approval is what creates the order, so the two are never separately
+          entered.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/procurement/requisitions/:id</span>
+          </div>
+          <img src="{{IMG:erp-04-requisition-detail}}" alt="An approved requisition with a history panel: raised and submitted by Sari Dewanti, approved by Budi Santoso, and a note that an approved requisition cannot be cancelled." loading="lazy">
+        </div>
+        <figcaption>
+          <b>An approved requisition.</b> Raised by Sari, approved by Budi — and it
+          could not have been anyone else, because you cannot approve a requisition
+          you raised. Note the second rule too: an approved requisition can't be
+          cancelled. The order it created is what's committed, so that is what you
+          cancel. The goods, not the paperwork.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/procurement/requisitions/new</span>
+          </div>
+          <img src="{{IMG:erp-03-requisition-new}}" alt="New requisition form with warehouse and supplier selected and two product lines pre-filled from the dashboard's low-stock shortcut." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Raising one.</b> Lines arrive pre-filled from the dashboard's low-stock
+          shortcut. Leaving unit cost blank inherits the product's standard cost,
+          which then carries all the way through to the value posted into Inventory
+          and Finance when the goods actually turn up.
+        </figcaption>
+      </figure>
+
+      <h3 class="sub">Inventory</h3>
+
+      <div class="shot-grid">
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/inventory/stock</span>
+            </div>
+            <img src="{{IMG:erp-09-stock}}" alt="Stock on hand per product and warehouse, with a banner listing three products below their reorder point, and a deleted product still showing its remaining stock." loading="lazy">
+          </div>
+          <figcaption>
+            <b>Stock on hand.</b> A database view over the ledger, not a table.
+            <span class="mono">OFF-LABEL</span> is marked deleted and still shows
+            its 30 rolls — a product removed from the catalogue is still a product
+            with stock and a history.
+          </figcaption>
+        </figure>
+
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/inventory/ledger</span>
+            </div>
+            <img src="{{IMG:erp-10-ledger}}" alt="The stock ledger: goods receipts and manual adjustments, positive and negative, each with a reason and the document or person behind it." loading="lazy">
+          </div>
+          <figcaption>
+            <b>The movement history.</b> Receipts and manual adjustments, up and
+            down, each with the document or the person behind it and a stated
+            reason. Nothing in this table is ever edited — the corrections are
+            themselves entries.
+          </figcaption>
+        </figure>
+      </div>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/inventory/products</span>
+          </div>
+          <img src="{{IMG:erp-12-products}}" alt="Product list with SKU, on-hand quantity, reorder point and standard cost; three products carry a below-reorder-point badge and there is a show-deleted toggle." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Products.</b> Three sit below their reorder point — flagged against an
+          on-hand quantity that is itself derived from the ledger. The
+          <em>Show deleted</em> toggle exists because deletion here is a flag, not
+          a removal.
+        </figcaption>
+      </figure>
+
+      <h3 class="sub">Finance</h3>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/finance</span>
+          </div>
+          <img src="{{IMG:erp-15-finance}}" alt="Finance module headed 'coming soon', with a two-account chart of accounts and four journal entries, each showing its debit and credit lines." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Finance, honestly labelled.</b> The module is a stub and the
+          application says so in its own heading: a chart of accounts and the
+          entries other modules post into it. No invoicing, no payment cycle, no
+          period close. Every entry shows both sides, so debits visibly equal
+          credits.
+        </figcaption>
+      </figure>
+
+      <h3 class="sub">Two workspaces, and who can see what</h3>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/admin/tenants</span>
+          </div>
+          <img src="{{IMG:erp-17-tenants}}" alt="Platform workspace list: Bahari Logistics with procurement and inventory in Asia/Makassar, Nusantara Retail with procurement, inventory and finance in Asia/Jakarta." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Both workspaces.</b> The platform view, seen by a superadmin who
+          belongs to no tenant at all. Nusantara runs three modules in
+          Asia/Jakarta; Bahari runs two, in Asia/Makassar. Every timestamp in the
+          system is stored UTC — the workspace timezone is what turns one into a
+          business date.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/admin/tenants/:id</span>
+          </div>
+          <img src="{{IMG:erp-18-tenant-entitlements}}" alt="Bahari Logistics workspace detail with the module entitlement matrix: procurement enabled, inventory enabled, finance off." loading="lazy">
+        </div>
+        <figcaption>
+          <b>The entitlement matrix.</b> Finance is off for Bahari. Turning a
+          module off takes effect on that workspace's next request and leaves
+          everyone's role levels untouched, so turning it back on restores them
+          rather than making an administrator reassign what was lost.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/ · signed in as Bahari's administrator</span>
+          </div>
+          <img src="{{IMG:erp-21-sidebar-no-finance}}" alt="The Bahari Logistics dashboard: the sidebar lists Dashboard, Procurement, Inventory and Users, with no Finance link, and the header shows only Proc admin and Inve admin badges." loading="lazy">
+        </div>
+        <figcaption>
+          <b>The same rule from inside.</b> Agus is Bahari's administrator —
+          implicitly an admin in every module his workspace has, as the two badges
+          in the header show. There is still no Finance link, because his workspace
+          isn't entitled to the module. This is <em>entitlement</em>, not
+          permission: no role level anyone could grant him would produce that link.
+          It is also a different workspace's data entirely — different products,
+          different people, same tables.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/settings/users/:id</span>
+          </div>
+          <img src="{{IMG:erp-20-user-roles}}" alt="A user's per-module role matrix: Procurement set to Approver, Inventory to Viewer, Finance to None, with a note that users are deactivated rather than deleted." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Per-module roles.</b> Five ranked levels — none, viewer, user,
+          approver, admin — assigned per module, per person. Budi approves in
+          Procurement, reads in Inventory, and has no Finance at all. Hiding a
+          control in this interface is cosmetic: every one of them is
+          independently refused by the API, which is the only place it counts.
+        </figcaption>
+      </figure>
+
+      <h3 class="sub">Theme, and the phone</h3>
+
+      <div class="shot-grid">
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/ · dark</span>
+            </div>
+            <img src="{{IMG:erp-22-dashboard}}" alt="The dashboard in dark theme: open purchase orders, low stock, an approval queue with approve and reject buttons, and recent stock activity." loading="lazy">
+          </div>
+          <figcaption>
+            <b>Dashboard.</b> Open orders, low stock, recent movement, and the
+            approval queue with its two-button decision — the approver's whole job
+            without leaving the page.
+          </figcaption>
+        </figure>
+
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/ · light</span>
+            </div>
+            <img src="{{IMG:erp-27-dashboard-light}}" alt="The same dashboard for the same user in light theme." loading="lazy">
+          </div>
+          <figcaption>
+            <b>The same screen, light.</b> Same account, same data — only the theme
+            differs. Both are first-class and the default follows the operating
+            system.
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="shot-grid">
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/ · 360px</span>
+            </div>
+            <img src="{{IMG:erp-24-mobile-dashboard}}" alt="The dashboard at 360 pixels wide, with widgets stacked and a four-item bottom tab bar." loading="lazy">
+          </div>
+          <figcaption>
+            <b>Dashboard at 360px.</b> The sidebar becomes a bottom tab bar within
+            thumb reach.
+          </figcaption>
+        </figure>
+
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/procurement/requisitions · 360px</span>
+            </div>
+            <img src="{{IMG:erp-25-mobile-requisitions}}" alt="The requisition list at 360 pixels: each row rendered as a card with number, status, supplier, requester and estimate." loading="lazy">
+          </div>
+          <figcaption>
+            <b>The same list as cards.</b> Not a squeezed table — the desktop
+            columns become labelled fields, so nothing needs a horizontal scroll to
+            read.
+          </figcaption>
+        </figure>
+
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/…/receive · 360px</span>
+            </div>
+            <img src="{{IMG:erp-26-mobile-receive}}" alt="The receive-goods form at 360 pixels with a sticky Post receipt bar above the tab bar, and the note that the form carries one key so posting twice cannot receive the goods twice." loading="lazy">
+          </div>
+          <figcaption>
+            <b>Receiving, on a phone.</b> The one screen genuinely used on one — at
+            a loading dock, one-handed — so the action bar is sticky and the retry
+            promise sits next to the button rather than two screens above it.
+          </figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="erp-scope">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">Delivered scope</p>
+      <h2>What shipped, and what didn't</h2>
+      <p>
+        This is an MVP with its edges left visible. Finance is a stub, approvals
+        are single-level, and there is no audit log — all three deliberate, and
+        worth more written down than hidden.
+      </p>
+    </div>
+
+    <dl class="stats">
+      <div><b>376</b><span>Backend tests</span></div>
+      <div><b>102</b><span>Frontend tests</span></div>
+      <div><b>14</b><span>Tables under RLS</span></div>
+      <div><b>6</b><span>Migrations</span></div>
+    </dl>
+
+    <div class="exhibit">
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Area</th><th>Status</th><th>What it covers</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Tenancy &amp; entitlements</td><td><span class="pill live">Live</span></td><td>Workspaces, per-module entitlement, suspension, and a platform superadmin who belongs to no tenant</td></tr>
+            <tr><td>Identity &amp; permissions</td><td><span class="pill live">Live</span></td><td>Firebase Auth for identity only; roles, tenant and entitlements resolved from the database on every request; five ranked levels per module</td></tr>
+            <tr><td>Procurement</td><td><span class="pill live">Live</span></td><td>Requisitions with approval, purchase orders, goods receipts with over-receipt refusal, suppliers</td></tr>
+            <tr><td>Inventory</td><td><span class="pill live">Live</span></td><td>Products, warehouses, an append-only stock ledger, derived stock on hand, manual adjustments with a stated reason</td></tr>
+            <tr><td>Cross-module posting</td><td><span class="pill live">Live</span></td><td>One goods receipt writes the receipt, the ledger rows and a balanced journal entry in a single transaction, idempotent on a key</td></tr>
+            <tr><td>Finance</td><td><span class="pill partial">Stub</span></td><td>Chart of accounts and the journal entries other modules post into it. No invoicing, no payment cycle, no period close, no reporting</td></tr>
+            <tr><td>Approvals</td><td><span class="pill partial">Single level</span></td><td>One approver decides. No delegation, no value thresholds, no multi-step chains</td></tr>
+            <tr><td>Audit log</td><td><span class="pill stub">Not built</span></td><td>Designed and specified; the tables are deliberately not created until after the MVP</td></tr>
+            <tr><td>Reversal documents</td><td><span class="pill stub">Not built</span></td><td>Ledger corrections are new entries. A first-class reversal document is post-MVP</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="exhibit-cap">Verified against the repository at the July 2026 revision.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="erp-architecture">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">Architecture</p>
+      <h2>Three tiers, and a boundary that lives in PostgreSQL</h2>
+      <p>
+        A conventional shape, deliberately. The opinionated part is where the
+        isolation boundary sits — in the database, below everything that could
+        forget about it.
+      </p>
+    </div>
+
+    <div class="exhibit">
+      <div class="scroller">
+        <div class="arch">
+          <div class="tier">
+            <div class="tier-label"><span>Client</span><span>Firebase Hosting</span></div>
+            <div class="nodes">
+              <div class="node">React 19 <small>TypeScript · Vite</small></div>
+              <div class="node">Tailwind <small>light + dark</small></div>
+              <div class="node">Route guards <small>cosmetic by design</small></div>
+              <div class="node accent">Exact decimals <small>no float on the wire</small></div>
+            </div>
+          </div>
+          <div class="connector">HTTPS · Firebase ID token</div>
+          <div class="tier">
+            <div class="tier-label"><span>API</span><span>Go + Fiber · modular monolith</span></div>
+            <div class="nodes">
+              <div class="node accent">Auth middleware <small>token → UID only</small></div>
+              <div class="node accent">Identity <small>resolved per request</small></div>
+              <div class="node">Module guards <small>entitlement × role</small></div>
+              <div class="node">Services <small>procurement · inventory · finance</small></div>
+            </div>
+          </div>
+          <div class="connector">every query inside a transaction · SET LOCAL app.current_tenant</div>
+          <div class="tier">
+            <div class="tier-label"><span>Data</span><span>PostgreSQL 17</span></div>
+            <div class="nodes">
+              <div class="node accent">14 tables <small>RLS enabled + forced</small></div>
+              <div class="node">2 views <small>security_invoker</small></div>
+              <div class="node">3 roles <small>none with BYPASSRLS</small></div>
+              <div class="node">Firebase Auth <small>identity provider</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="exhibit-cap">Request path, top to bottom.</p>
+    </div>
+
+    <div class="col stack">
+      <p class="body-text">
+        <strong>It is one deployable, not a set of services.</strong> That is the
+        whole reason a goods receipt can write into three modules atomically: the
+        moment procurement, inventory and finance become separate services, that
+        single transaction becomes a distributed one — or, more honestly, becomes
+        an eventual-consistency story with compensating writes for the case where
+        the journal entry fails after the stock has already moved. The monolith is
+        the feature.
+      </p>
+
+      <h3 class="sub">How a request is isolated, in order</h3>
+      <ul class="ticks">
+        <li><strong>The token is verified for its UID, and nothing else.</strong> A Firebase ID token proves who signed in. It is never read for roles or tenancy.</li>
+        <li><strong>Identity, tenant and roles are read from the database, every request.</strong> Not from a token claim — a claim is a snapshot, and it keeps asserting what was true when it was minted long after an administrator has revoked the access.</li>
+        <li><strong>The handler runs inside a transaction that issues <span class="mono">SET LOCAL app.current_tenant</span>.</strong> <span class="mono">SET LOCAL</span>, never plain <span class="mono">SET</span>: a session-scoped setting outlives the transaction and would hand the tenant context to whichever request next borrowed that pooled connection.</li>
+        <li><strong>Fourteen tables have row-level security enabled <em>and forced</em>.</strong> The policy compares each row's tenant to that setting. <span class="mono">FORCE</span> is the part people miss — without it the table's owner bypasses the policy entirely, which silently defeats the mechanism in local development, where you are usually connected as the owner.</li>
+        <li><strong>Both views are <span class="mono">security_invoker</span>.</strong> By default a view executes with its <em>owner's</em> privileges, which means a view over protected tables cheerfully returns every tenant's rows to everybody.</li>
+        <li><strong>No application role holds <span class="mono">BYPASSRLS</span> or <span class="mono">SUPERUSER</span>.</strong> There is a checked-in verifier that asserts this against a live database — because a role created through a hosting provider's web console quietly gets that privilege, and nothing looks wrong afterwards.</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Frontend hiding is cosmetic — a rule, not an aspiration.</strong>
+        Every control the interface hides is independently refused by the API. The
+        sidebar without a Finance link and the endpoint that returns
+        <span class="mono">module_not_enabled</span> are two separate enforcements
+        of the same fact, and only the second one is load-bearing.
+      </div>
+
+      <div class="callout">
+        <strong>Nothing that represents money is a float.</strong> Amounts are
+        <span class="mono">NUMERIC(18,2)</span> and quantities
+        <span class="mono">NUMERIC(18,4)</span>, carried across the wire and
+        through TypeScript as exact decimal strings rather than parsed into a
+        binary float and back. Sums and comparisons happen in SQL, so there is no
+        point in the round trip where a total can quietly acquire a rounding
+        error.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="erp-decisions">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">Decisions</p>
+      <h2>Four decisions, and what each one cost</h2>
+      <p>Each had a cheaper alternative. None of them were free.</p>
+    </div>
+
+    <div class="exhibit">
+      <div class="scroller">
+        <table class="decisions">
+          <thead>
+            <tr>
+              <th>Decision</th>
+              <th>Instead of</th>
+              <th>What it bought</th>
+              <th>What it cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Isolation enforced by row-level security</td>
+              <td>A tenant filter written into every query</td>
+              <td>A forgotten filter returns nothing instead of another company's rows — the failure is loud and local</td>
+              <td>Every tenant-scoped query has to run through one transaction helper; a handler that bypasses it is a defect the test suite exists to catch</td>
+            </tr>
+            <tr>
+              <td>Stock on hand is derived, never stored</td>
+              <td>A quantity column updated on every movement</td>
+              <td>A counter cannot drift from the ledger that is supposed to explain it, because there is no counter</td>
+              <td>A view and more SQL; every read pays for an aggregate instead of a column lookup</td>
+            </tr>
+            <tr>
+              <td>Nothing is ever deleted</td>
+              <td><span class="mono">DELETE</span></td>
+              <td>Master data soft-deletes, documents cancel, ledgers only append — last quarter's history survives this quarter's tidying up</td>
+              <td>Every list carries a deleted filter, and the one deliberate exception — revoking a permission — had to be argued for and written down</td>
+            </tr>
+            <tr>
+              <td>Tests run against real PostgreSQL in containers</td>
+              <td>Mocks, or SQLite for speed</td>
+              <td>The isolation model is actually tested — RLS is a property of Postgres policy evaluation, and a stubbed database proves nothing about it</td>
+              <td>The suite needs Docker and runs one package at a time, because each package that touches the database brings up its own instance</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="exhibit-cap">The fourth is the one that decides whether the first three are real.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="erp-problems">
+  <div class="wrap">
+    <div class="col stack">
+      <div class="sec-head">
+        <p class="eyebrow">Problems</p>
+        <h2>Three that took real thought</h2>
+      </div>
+
+      <h3 class="sub">One transaction, three modules, and a retry</h3>
+      <p class="body-text">
+        Posting a goods receipt writes into all three modules in a fixed order: the
+        receipt header, then the stock ledger rows, then the journal entry. The
+        order is load-bearing — the entry is valued from what the ledger rows
+        recorded — so it has its own test, because a refactor that reordered it
+        would still pass every other test in the suite.
+      </p>
+      <p class="body-text">
+        The retry is the harder half. A receipt posted from a warehouse on a bad
+        connection gets submitted twice, and nothing in the schema distinguishes
+        the duplicate from a genuine second delivery of the same goods. So the form
+        generates an idempotency key <strong>when the screen mounts</strong>, not
+        when the button is pressed: both attempts carry the same key, and the
+        second replays the first's result rather than receiving the goods again.
+      </p>
+      <p class="body-text">
+        Two reads catch nearly every replay. The last narrow window — a twin that
+        commits between the second read and the insert — is closed with a savepoint
+        around the header insert and its document-number allocation. On a
+        unique-key collision the savepoint rolls back, the allocated
+        <span class="mono">GR</span> number is handed back rather than burned, and
+        the original receipt is returned. Without the savepoint that failed insert
+        would poison the entire transaction, and every retry would leave a
+        permanent gap in the workspace's receipt numbering.
+      </p>
+
+      <h3 class="sub">You cannot approve your own work — including as the admin</h3>
+      <p class="body-text">
+        Segregation of duties is easy to state and easy to quietly undermine. The
+        clause that matters is the second one: the rule applies to the workspace
+        administrator too. That is the natural place to carve an exception — the
+        administrator is trusted, and they are usually the one unblocking somebody
+        else — and it is exactly the exception that makes the control worthless.
+      </p>
+      <p class="body-text">
+        It is checked per record, which is also why it cannot live in the role
+        middleware alongside everything else. The middleware knows the caller's
+        level; it does not know who raised the document in front of them. Status is
+        checked first, deliberately: telling somebody "you may not approve your
+        own" when the real answer is "it was approved yesterday" sends them to
+        argue with the wrong person.
+      </p>
+
+      <h3 class="sub">Deleted rows still have to appear in history</h3>
+      <p class="body-text">
+        Soft deletion is easy to get half right. Lists filter deleted rows and
+        writes refuse them — but the stock ledger's join to the product table
+        carries <strong>no deleted filter at all</strong>, on purpose. A movement of
+        a product somebody deleted last week is still a movement that happened, and
+        adding <span class="mono">AND p.deleted_at IS NULL</span> there by reflex
+        would not hide a stale product; it would erase last quarter's history from
+        the screen.
+      </p>
+      <div class="callout">
+        That join looks exactly like an oversight, which is the problem. It carries
+        a comment saying it is deliberate and a test that fails if someone
+        "fixes" it — the only two things that stop a reasonable-looking
+        code review from reintroducing the bug.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="erp-infra">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">Delivery</p>
+      <h2>Infrastructure and operations</h2>
+    </div>
+
+    <div class="grid-3">
+      <div class="panel stack-s">
+        <h3 class="sub">Backend</h3>
+        <p style="font-size:.9rem; color:var(--muted);">Go with Fiber, built as a modular monolith — three modules, one deployable. Containerised; the image builds and runs. Memory safety, a small container surface and static typing are what the language buys here.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Frontend</h3>
+        <p style="font-size:.9rem; color:var(--muted);">React 19 and TypeScript on Vite, styled with Tailwind in both themes. Module guards mirror the server's — and are treated as decoration, because the API refuses independently.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Database</h3>
+        <p style="font-size:.9rem; color:var(--muted);">PostgreSQL 17. Six versioned migrations, fourteen tables under forced row-level security, two <span class="mono">security_invoker</span> views, and three roles — migrate, app, admin — none of which may bypass a policy.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Identity</h3>
+        <p style="font-size:.9rem; color:var(--muted);">Firebase Authentication issues the token; the API verifies it for the UID alone. Everything about what that person may do is read from the database on the same request that uses it.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Tests &amp; CI</h3>
+        <p style="font-size:.9rem; color:var(--muted);">376 backend tests against real PostgreSQL in containers and 102 frontend tests, run by GitHub Actions on every push and pull request — both, because a green pull request that goes red on merge is a signal nobody sees.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Operability</h3>
+        <p style="font-size:.9rem; color:var(--muted);">A checked-in verifier (<span class="mono">cmd/dbverify</span>) asserts the invariants that live in the database rather than in Go, against whichever database it is pointed at — the ones a test suite running on a container can never confirm about production.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="erp-status">
+  <div class="wrap">
+    <div class="col stack">
+      <div class="sec-head">
+        <p class="eyebrow">Status</p>
+        <h2>Deploy-ready, not deployed</h2>
+      </div>
+
+      <p class="body-text">
+        The database is live and the container is proven; the API is not hosted.
+        Both a Cloud Run and a Render deployment are configured and committed, and
+        each stops in the same place — a card verification that an Indonesian debit
+        card does not pass. It is a billing wall, not an engineering one, which is
+        why it is written here plainly rather than dressed up as "coming soon".
+      </p>
+
+      <ul class="ticks">
+        <li><strong>Database — live.</strong> Neon PostgreSQL 17 in Singapore. Schema migrated, demo data seeded, and the invariant checker passes all eleven checks against it — including that no application role holds <span class="mono">BYPASSRLS</span>, which is precisely the thing a console-provisioned role gets by default.</li>
+        <li><strong>Frontend — deployed, and not linked here.</strong> It is live on Firebase Hosting, but it was built against a placeholder API URL, so it stops at the login screen. A link that dead-ends reads as a broken project, so the repository is linked instead.</li>
+        <li><strong>Backend — not deployed.</strong> The image builds and runs locally, and both deployment paths are one command away from a host that accepts the payment method.</li>
+      </ul>
+
+      <p class="body-text">
+        Every screenshot above is the application running locally against the same
+        seeded dataset that is loaded into that production database — the same
+        migrations, the same fixtures, the same UUIDs.
+      </p>
+
+      <h3 class="sub">What I'd build next, in order</h3>
+      <ul class="ticks">
+        <li><strong>The audit log.</strong> Designed and specified during the MVP and deliberately not created — the tables are described, the write path is not. First job, because it is the thing an ERP is asked about first.</li>
+        <li><strong>Reversal documents.</strong> Ledger corrections are currently new adjustment entries with a note. A first-class reversal that points at what it reverses is the difference between a correction and an explanation.</li>
+        <li><strong>Approvals beyond one level.</strong> Value thresholds, delegation, and multi-step chains — the three things every real procurement department asks for immediately.</li>
+        <li><strong>Finance past the stub.</strong> Invoicing, the payment cycle, and period close. The posting side already works; what's missing is everything that happens after.</li>
+      </ul>
+
+      <div class="btn-row" style="margin-top: .6rem;">
+        <a class="btn btn-primary" href="https://github.com/Nimrod-DG/mini-erp" target="_blank" rel="noopener">View the repository ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap" style="padding-bottom: 2.5rem;">
+  <p class="col" style="font-size:.8rem; color:var(--muted-dim); line-height:1.55;">
+    Figures verified against the repository at the July 2026 revision.
+    Screenshots are of the application running locally against the seeded demo
+    dataset; both workspaces, and every person in them, are fictional.
+  </p>
+</div>
+</div><!-- /#project-mini-erp -->
+
 <!-- ================================================================= -->
 <footer class="footer">
   <div class="wrap stack-s">
@@ -1352,6 +2215,13 @@
     function setActive(id) {
       document.querySelectorAll(".project-view").forEach(function (v) {
         v.setAttribute("data-active", v.getAttribute("data-project") === id ? "true" : "false");
+      });
+      // The topbar's section links are per-project, because section IDs are
+      // namespaced per project. Showing the wrong project's nav would offer
+      // links that resolve to a hidden section — getElementById returns the
+      // first match in document order, which is the other case study.
+      document.querySelectorAll("[data-nav-for]").forEach(function (n) {
+        n.setAttribute("data-active", n.getAttribute("data-nav-for") === id ? "true" : "false");
       });
     }
 
