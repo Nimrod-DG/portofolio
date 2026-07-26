@@ -682,7 +682,11 @@
       <a href="#scope">Scope</a>
       <a href="#ownership">Ownership</a>
       <a href="#architecture">Architecture</a>
-      <a class="live" href="https://sportclub-6d9de.firebaseapp.com/login" target="_blank" rel="noopener">Live ↗</a>
+      <!-- Was "Live ↗". The hosted beta's API is down, so that link now lands on
+           a login screen that cannot succeed — the same reason mini-erp's
+           deployed frontend is not linked either. Points at the explanation
+           instead of at the disappointment. -->
+      <a class="live" href="#status">Status</a>
     </nav>
     <!-- mini-erp has no live URL to offer: the API is not hosted, so the
          deployed frontend stops at its login screen. The repository is the
@@ -726,7 +730,7 @@
         <a class="project-card" href="#project-lw-sports" data-project-link="lw-sports">
           <div class="thumb"><img src="{{IMG:09-meet}}" alt="LW Sports Community — a meet detail page showing slots, host mode and a slot-trading tab." loading="lazy"></div>
           <div class="card-body">
-            <p class="card-eyebrow">Full-stack · case study <span class="pill live">Live</span></p>
+            <p class="card-eyebrow">Full-stack · case study <span class="pill partial">Beta · paused</span></p>
             <h3>LW Sports Community</h3>
             <p>A sports community platform where a match slot is an asset players buy, sell and transfer.</p>
             <div class="card-tags">
@@ -778,19 +782,25 @@
     </p>
 
     <div class="btn-row rise">
-      <a class="btn btn-primary" href="https://sportclub-6d9de.firebaseapp.com/login" target="_blank" rel="noopener">
-        Open the live product ↗
-      </a>
-      <a class="btn btn-ghost" href="#tour">See the screens</a>
+      <a class="btn btn-primary" href="#tour">See the screens</a>
+      <a class="btn btn-ghost" href="#status">Why it is offline</a>
     </div>
 
+    <!-- The hosted demo is down: Firebase Hosting still serves the frontend, but
+         the Cloud Run API behind it does not start, so the app reaches its login
+         screen and stops there. The credentials stay listed because they are
+         still the right ones — but sending somebody to a sign-in that cannot
+         succeed, without warning them first, is worse than offering no link. -->
     <dl class="demo rise">
-      <p class="demo-label">Demo login</p>
+      <p class="demo-label">Demo login · currently offline</p>
       <div class="demo-pair"><dt>Email</dt><dd>david@gmail.com</dd></div>
       <div class="demo-pair"><dt>Password</dt><dd>Password12</dd></div>
       <p class="demo-note">
-        A shared demo account on a live beta — please browse rather than edit, and
-        note that other people's real clubs and matches are visible inside.
+        The hosted beta is paused — the API is not running, so sign-in fails and
+        the site stops at its login screen. These are the right credentials for
+        when it is back. The screenshots below were taken while it was serving
+        traffic; other people's real clubs and matches were visible inside, which
+        is why the demo account was read-only by convention.
       </p>
     </dl>
 
@@ -798,7 +808,7 @@
       <div><dt>Role</dt><dd>Full-stack, backend lead</dd></div>
       <div><dt>Team</dt><dd>2 developers</dd></div>
       <div><dt>Timeline</dt><dd>9 months</dd></div>
-      <div><dt>Status</dt><dd>Beta · live</dd></div>
+      <div><dt>Status</dt><dd>Beta · paused</dd></div>
     </dl>
 
     <figure class="shot rise" style="margin-top: 1rem;">
@@ -859,7 +869,9 @@
       <p class="eyebrow">The product</p>
       <h2>What it looks like in use</h2>
       <p>
-        Screens captured from the live deployment. The product ships in Bahasa
+        Screens captured from the deployment while it was serving traffic; the
+        hosted beta is paused now, for the reason in <a href="#status">Status</a>.
+        The product ships in Bahasa
         Indonesia — its users are Indonesian — so captions carry the translation.
         Personal details have been replaced with placeholders.
       </p>
@@ -973,7 +985,7 @@
     </div>
 
     <dl class="stats">
-      <div><b>10</b><span>Modules live</span></div>
+      <div><b>10</b><span>Modules built</span></div>
       <div><b>171</b><span>API endpoints</span></div>
       <div><b>32</b><span>Data models</span></div>
       <div><b>552</b><span>Commits</span></div>
@@ -986,16 +998,16 @@
             <tr><th>Module</th><th>Status</th><th>What it covers</th></tr>
           </thead>
           <tbody>
-            <tr><td>Identity &amp; onboarding</td><td><span class="pill live">Live</span></td><td>Firebase Auth, Google OAuth, email OTP, multi-step player onboarding</td></tr>
-            <tr><td>Player rating</td><td><span class="pill live">Live</span></td><td>Self-assessed skills → weighted engine → six-stat player card, separate outfield and goalkeeper scopes</td></tr>
-            <tr><td>Clubs</td><td><span class="pill live">Live</span></td><td>Roles, invite links, join approval, media gallery, discussion feed, rules acceptance, per-club permissions</td></tr>
-            <tr><td>Meets &amp; slots</td><td><span class="pill live">Live</span></td><td>Position-aware capacity, member vs non-member pricing, invitations, attendance, recurring series</td></tr>
-            <tr><td>Payments &amp; grace periods</td><td><span class="pill live">Live</span></td><td>Proof upload, host verification, per-person deadline overrides, automatic expiry and slot release</td></tr>
-            <tr><td>Slot marketplace</td><td><span class="pill live">Live</span></td><td>List, claim, pay, verify, transfer — with admin override and claim release on rejection</td></tr>
-            <tr><td>Play memberships</td><td><span class="pill live">Live</span></td><td>Recurring paid club programmes, enrolment approval, waitlist promotion, scheduled activation and closure</td></tr>
-            <tr><td>Social graph</td><td><span class="pill live">Live</span></td><td>Follows, follow requests, mutuals, blocking, per-field privacy</td></tr>
-            <tr><td>Discovery</td><td><span class="pill live">Live</span></td><td>Players, clubs and meets filtered by sport, level, time and mapped location</td></tr>
-            <tr><td>Inbox</td><td><span class="pill live">Live</span></td><td>Messages and notifications, folders, starring, bulk actions, deep links</td></tr>
+            <tr><td>Identity &amp; onboarding</td><td><span class="pill live">Built</span></td><td>Firebase Auth, Google OAuth, email OTP, multi-step player onboarding</td></tr>
+            <tr><td>Player rating</td><td><span class="pill live">Built</span></td><td>Self-assessed skills → weighted engine → six-stat player card, separate outfield and goalkeeper scopes</td></tr>
+            <tr><td>Clubs</td><td><span class="pill live">Built</span></td><td>Roles, invite links, join approval, media gallery, discussion feed, rules acceptance, per-club permissions</td></tr>
+            <tr><td>Meets &amp; slots</td><td><span class="pill live">Built</span></td><td>Position-aware capacity, member vs non-member pricing, invitations, attendance, recurring series</td></tr>
+            <tr><td>Payments &amp; grace periods</td><td><span class="pill live">Built</span></td><td>Proof upload, host verification, per-person deadline overrides, automatic expiry and slot release</td></tr>
+            <tr><td>Slot marketplace</td><td><span class="pill live">Built</span></td><td>List, claim, pay, verify, transfer — with admin override and claim release on rejection</td></tr>
+            <tr><td>Play memberships</td><td><span class="pill live">Built</span></td><td>Recurring paid club programmes, enrolment approval, waitlist promotion, scheduled activation and closure</td></tr>
+            <tr><td>Social graph</td><td><span class="pill live">Built</span></td><td>Follows, follow requests, mutuals, blocking, per-field privacy</td></tr>
+            <tr><td>Discovery</td><td><span class="pill live">Built</span></td><td>Players, clubs and meets filtered by sport, level, time and mapped location</td></tr>
+            <tr><td>Inbox</td><td><span class="pill live">Built</span></td><td>Messages and notifications, folders, starring, bulk actions, deep links</td></tr>
             <tr><td>Admin console</td><td><span class="pill partial">Partial</span></td><td>Dashboard overview and user CRUD. No moderation queue or audit log yet</td></tr>
             <tr><td>User settings</td><td><span class="pill stub">Not built</span></td><td>Privacy API exists and is used elsewhere; the settings screen itself is a placeholder</td></tr>
             <tr><td>Match scoring</td><td><span class="pill stub">Not built</span></td><td>Team split and live scoring — designed, deliberately deferred</td></tr>
@@ -1322,13 +1334,25 @@
   <div class="wrap">
     <div class="col stack">
       <div class="sec-head">
-        <p class="eyebrow">What's next</p>
-        <h2>The roadmap from here</h2>
+        <p class="eyebrow">Status &amp; what's next</p>
+        <h2>Offline for now — and the roadmap from here</h2>
       </div>
 
       <p class="body-text">
-        The platform is in active beta and deployed. Every module marked live above
-        works end to end. The work I'd prioritise next, in order:
+        <strong>The hosted beta is paused.</strong> Firebase Hosting still serves
+        the frontend, so the site loads; the Cloud Run API behind it no longer
+        starts, so sign-in fails and nothing past the login screen is reachable.
+        The cause is billing rather than code — the same wall the
+        <a href="#project-mini-erp">mini-erp</a> case study runs into, an
+        Indonesian debit card that neither Google nor Stripe will verify. Nothing
+        was rolled back and nothing broke; the service simply stopped being paid
+        for. Bringing it back is a redeploy, not a repair.
+      </p>
+
+      <p class="body-text">
+        Everything described above was built and working in production, and the
+        screenshots are from that deployment while it was serving real users. The
+        work I'd prioritise when it returns, in order:
       </p>
 
       <ul class="ticks">
@@ -1350,9 +1374,9 @@
       </div>
 
       <div class="btn-row" style="margin-top: .6rem;">
-        <a class="btn btn-primary" href="https://sportclub-6d9de.firebaseapp.com/login" target="_blank" rel="noopener">Open the live product ↗</a>
+        <a class="btn btn-primary" href="#tour">See the screens</a>
         <span class="mono" style="font-size:.78rem; color:var(--muted-dim);">
-          david@gmail.com · Password12
+          hosted beta paused · david@gmail.com · Password12
         </span>
       </div>
     </div>
@@ -1362,7 +1386,8 @@
 <div class="wrap" style="padding-bottom: 2.5rem;">
   <p class="col" style="font-size:.8rem; color:var(--muted-dim); line-height:1.55;">
     Figures cited are drawn from the repository at the July 2026 revision.
-    Screenshots are from the live deployment, with personal details replaced.
+    Screenshots are from the deployment as it ran, with personal details replaced.
+    The hosted beta is currently paused — see <a href="#status">Status</a>.
   </p>
 </div>
 </div><!-- /#project-lw-sports -->
@@ -1875,11 +1900,11 @@
             <tr><th>Area</th><th>Status</th><th>What it covers</th></tr>
           </thead>
           <tbody>
-            <tr><td>Tenancy &amp; entitlements</td><td><span class="pill live">Live</span></td><td>Workspaces, per-module entitlement, suspension, and a platform superadmin who belongs to no tenant</td></tr>
-            <tr><td>Identity &amp; permissions</td><td><span class="pill live">Live</span></td><td>Firebase Auth for identity only; roles, tenant and entitlements resolved from the database on every request; five ranked levels per module</td></tr>
-            <tr><td>Procurement</td><td><span class="pill live">Live</span></td><td>Requisitions with approval, purchase orders, goods receipts with over-receipt refusal, suppliers</td></tr>
-            <tr><td>Inventory</td><td><span class="pill live">Live</span></td><td>Products, warehouses, an append-only stock ledger, derived stock on hand, manual adjustments with a stated reason</td></tr>
-            <tr><td>Cross-module posting</td><td><span class="pill live">Live</span></td><td>One goods receipt writes the receipt, the ledger rows and a balanced journal entry in a single transaction, idempotent on a key</td></tr>
+            <tr><td>Tenancy &amp; entitlements</td><td><span class="pill live">Built</span></td><td>Workspaces, per-module entitlement, suspension, and a platform superadmin who belongs to no tenant</td></tr>
+            <tr><td>Identity &amp; permissions</td><td><span class="pill live">Built</span></td><td>Firebase Auth for identity only; roles, tenant and entitlements resolved from the database on every request; five ranked levels per module</td></tr>
+            <tr><td>Procurement</td><td><span class="pill live">Built</span></td><td>Requisitions with approval, purchase orders, goods receipts with over-receipt refusal, suppliers</td></tr>
+            <tr><td>Inventory</td><td><span class="pill live">Built</span></td><td>Products, warehouses, an append-only stock ledger, derived stock on hand, manual adjustments with a stated reason</td></tr>
+            <tr><td>Cross-module posting</td><td><span class="pill live">Built</span></td><td>One goods receipt writes the receipt, the ledger rows and a balanced journal entry in a single transaction, idempotent on a key</td></tr>
             <tr><td>Finance</td><td><span class="pill partial">Stub</span></td><td>Chart of accounts and the journal entries other modules post into it. No invoicing, no payment cycle, no period close, no reporting</td></tr>
             <tr><td>Approvals</td><td><span class="pill partial">Single level</span></td><td>One approver decides. No delegation, no value thresholds, no multi-step chains</td></tr>
             <tr><td>Audit log</td><td><span class="pill stub">Not built</span></td><td>Designed and specified; the tables are deliberately not created until after the MVP</td></tr>
