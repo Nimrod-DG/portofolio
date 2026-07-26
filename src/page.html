@@ -1,0 +1,1435 @@
+<title>David Gosal — Full-Stack Developer</title>
+
+<style>
+  /* ===================================================================
+     TOKENS
+     Palette lifted from the product's own tailwind.config.js so the case
+     study reads as part of the product's world, not a template:
+       navy #05447d · orange #f77509 · peach #ecb46c · sportRed #da4527
+     Ground is a blue-biased near-black — floodlit evening pitch, which is
+     when these matches actually happen.
+     =================================================================== */
+  :root {
+    --ink:        #080d13;
+    --surface:    #111a24;
+    --surface-2:  #18232f;
+    --line:       #223140;
+    --line-soft:  #1a2734;
+    --fg:         #e9eef3;
+    --fg-strong:  #ffffff;
+    --muted:      #8ca0b3;
+    --muted-dim:  #61748a;
+
+    --accent:       #f77509;
+    --accent-soft:  #ecb46c;
+    --accent-ghost: rgba(247, 117, 9, .11);
+    --on-accent:    #17110a;
+    --navy:         #0b5a9e;
+
+    --ok:   #4fb477;
+    --warn: #ecb46c;
+    --crit: #da4527;
+
+    --font-display: system-ui, -apple-system, "Segoe UI Variable Display",
+                    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-body:    system-ui, -apple-system, "Segoe UI", Roboto,
+                    "Helvetica Neue", Arial, sans-serif;
+    --font-mono:    ui-monospace, "Cascadia Mono", "Cascadia Code", "SF Mono",
+                    Menlo, Consolas, "Liberation Mono", monospace;
+
+    /* Case-study reading width — prose, tables, diagrams and screenshots all
+       share it, so nothing is stranded against a wider element. */
+    --wide: 860px;
+    /* Portfolio-level width — the home grid and the top bar, which want room
+       for real gallery columns rather than a reading measure. */
+    --page: 1140px;
+    --pad:  clamp(1.15rem, 4vw, 2rem);
+
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 14px 38px -20px rgba(0,0,0,.85);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --ink: #f2f5f8; --surface: #ffffff; --surface-2: #f7f9fb;
+      --line: #dae2ea; --line-soft: #e6ecf2;
+      --fg: #0b1720; --fg-strong: #04303f;
+      --muted: #5a6e80; --muted-dim: #7d8fa0;
+      --accent: #d95f00; --accent-soft: #b06c1d;
+      --accent-ghost: rgba(217,95,0,.09); --on-accent: #ffffff;
+      --navy: #05447d;
+      --ok: #1f8a52; --warn: #9a6a12; --crit: #b8341a;
+      --shadow: 0 1px 2px rgba(12,32,48,.05), 0 14px 34px -22px rgba(12,32,48,.4);
+    }
+  }
+
+  /* The viewer's explicit toggle must beat the OS preference, both ways. */
+  :root[data-theme="light"] {
+    --ink: #f2f5f8; --surface: #ffffff; --surface-2: #f7f9fb;
+    --line: #dae2ea; --line-soft: #e6ecf2;
+    --fg: #0b1720; --fg-strong: #04303f;
+    --muted: #5a6e80; --muted-dim: #7d8fa0;
+    --accent: #d95f00; --accent-soft: #b06c1d;
+    --accent-ghost: rgba(217,95,0,.09); --on-accent: #ffffff;
+    --navy: #05447d;
+    --ok: #1f8a52; --warn: #9a6a12; --crit: #b8341a;
+    --shadow: 0 1px 2px rgba(12,32,48,.05), 0 14px 34px -22px rgba(12,32,48,.4);
+  }
+  :root[data-theme="dark"] {
+    --ink: #080d13; --surface: #111a24; --surface-2: #18232f;
+    --line: #223140; --line-soft: #1a2734;
+    --fg: #e9eef3; --fg-strong: #ffffff;
+    --muted: #8ca0b3; --muted-dim: #61748a;
+    --accent: #f77509; --accent-soft: #ecb46c;
+    --accent-ghost: rgba(247,117,9,.11); --on-accent: #17110a;
+    --navy: #0b5a9e;
+    --ok: #4fb477; --warn: #ecb46c; --crit: #da4527;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 14px 38px -20px rgba(0,0,0,.85);
+  }
+
+  /* ===================================================================
+     RESET
+     The artifact host injects its own, so this is redundant there — but it
+     makes the same file render correctly opened straight from disk, where
+     browser defaults would fight the flex-gap spacing and indent every
+     <dd> by 40px.
+     =================================================================== */
+  *, *::before, *::after { box-sizing: border-box; }
+  h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
+  dd { margin-inline-start: 0; }
+  img { display: block; max-width: 100%; height: auto; }
+
+  /* ===================================================================
+     BASE
+     =================================================================== */
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  ::selection { background: var(--accent); color: var(--on-accent); }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    color: var(--fg-strong);
+    text-wrap: balance;
+    line-height: 1.12;
+    letter-spacing: -.03em;
+    font-weight: 800;
+  }
+  code, .mono { font-family: var(--font-mono); }
+
+  /* ===================================================================
+     LAYOUT PRIMITIVES  — sibling spacing via gap, never stacked margins
+     =================================================================== */
+  .wrap { max-width: var(--wide); margin-inline: auto; padding-inline: var(--pad); }
+  .wrap-wide { max-width: var(--page); margin-inline: auto; padding-inline: var(--pad); }
+  /* Kept as a hook so the markup stays stable, but it no longer narrows
+     anything — see the note on --wide above. */
+  .col  { max-width: 100%; }
+  .stack   { display: flex; flex-direction: column; gap: 1.05rem; }
+  .stack-s { display: flex; flex-direction: column; gap: .6rem; }
+
+  /* ===================================================================
+     TOPBAR
+     =================================================================== */
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--ink) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .topbar-in {
+    max-width: var(--page); margin-inline: auto;
+    padding: .7rem var(--pad);
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  }
+  .topbar-mark {
+    font-family: var(--font-mono); font-size: .74rem;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--fg-strong); font-weight: 600;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
+  .topbar-nav { margin-left: auto; display: flex; gap: 1.1rem; align-items: center; flex-wrap: wrap; }
+  .topbar-nav a {
+    font-family: var(--font-mono); font-size: .72rem;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none;
+  }
+  .topbar-nav a:hover { color: var(--accent); }
+  .topbar-nav a.live { color: var(--accent); }
+  @media (max-width: 860px) { .topbar-nav a:not(.live) { display: none; } }
+
+  /* ===================================================================
+     BUTTONS
+     =================================================================== */
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-family: var(--font-body); font-size: .9rem; font-weight: 650;
+    padding: .62rem 1.1rem; border-radius: 8px;
+    text-decoration: none; border: 1px solid transparent;
+    transition: transform .12s ease, background .12s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: var(--accent-soft); }
+  .btn-ghost { border-color: var(--line); color: var(--fg); background: var(--surface); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+
+  /* ===================================================================
+     DEMO ACCESS — the live app redirects to /login, so a bare link is a
+     dead end for anyone without an account.
+     =================================================================== */
+  .demo {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1.4rem;
+    border: 1px dashed color-mix(in srgb, var(--accent) 40%, var(--line));
+    background: var(--accent-ghost);
+    border-radius: var(--radius);
+    padding: .75rem 1rem;
+  }
+  .demo-label {
+    font-family: var(--font-mono); font-size: .64rem;
+    letter-spacing: .13em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+  }
+  .demo-pair { display: flex; align-items: baseline; gap: .45rem; }
+  .demo-pair dt {
+    font-family: var(--font-mono); font-size: .64rem;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted-dim);
+  }
+  .demo-pair dd {
+    font-family: var(--font-mono); font-size: .82rem;
+    color: var(--fg-strong); font-weight: 600;
+    user-select: all; /* click once to select the whole value */
+  }
+  .demo-note { font-size: .78rem; color: var(--muted); flex-basis: 100%; }
+
+  /* ===================================================================
+     HEADER — one restrained flourish: a floodlight wash, top-centre
+     =================================================================== */
+  .header {
+    position: relative; overflow: hidden;
+    padding-block: clamp(2.8rem, 8vw, 4.8rem) clamp(2rem, 5vw, 3rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .header::before {
+    content: ""; position: absolute; top: -55%; left: 50%;
+    transform: translateX(-50%);
+    width: min(1100px, 150vw); height: 780px;
+    background: radial-gradient(ellipse 50% 50% at 50% 50%, var(--accent-ghost) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header > * { position: relative; }
+
+  .eyebrow {
+    font-family: var(--font-mono); font-size: .73rem;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+  }
+  .header h1 { font-size: clamp(2.2rem, 6vw, 3.7rem); max-width: 20ch; }
+  .standfirst {
+    font-size: clamp(1.03rem, 2.1vw, 1.2rem);
+    color: var(--muted); line-height: 1.55;
+  }
+  .standfirst strong { color: var(--fg); font-weight: 600; }
+
+  /* Four cells, each sized so its value sits on a single line — a wrapped
+     two-line value in one cell and one-line values beside it made the row
+     look ragged. Values are written short to earn that. */
+  .meta {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--line);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden;
+  }
+  /* Explicit 4-up then 2-up. auto-fit would pass through a 3-column state
+     where the longest value gets clipped by the ellipsis, and truncating a
+     value is worse than any amount of raggedness. */
+  @media (max-width: 880px) { .meta { grid-template-columns: repeat(2, 1fr); } }
+  .meta div { background: var(--surface); padding: .8rem .95rem; display: flex; flex-direction: column; gap: .3rem; }
+  .meta dt {
+    font-family: var(--font-mono); font-size: .64rem;
+    letter-spacing: .11em; text-transform: uppercase; color: var(--muted-dim);
+  }
+  .meta dd {
+    font-size: .85rem; font-weight: 650; color: var(--fg-strong);
+    line-height: 1.3; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ===================================================================
+     SCREENSHOT FRAME
+     The route pill is not decoration — it names the actual app route, so
+     the visuals stay tied to the architecture discussion.
+     =================================================================== */
+  .shot { display: flex; flex-direction: column; gap: .7rem; }
+  .shot-frame {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; background: var(--surface-2); box-shadow: var(--shadow);
+  }
+  .shot-bar {
+    display: flex; align-items: center; gap: .7rem;
+    padding: .5rem .75rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .dots { display: flex; gap: .3rem; flex: none; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); display: block; }
+  .route {
+    font-family: var(--font-mono); font-size: .7rem;
+    color: var(--muted-dim); letter-spacing: .02em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  /* Caption runs the full width of its frame so it reads as part of the
+     figure rather than a narrow block pinned to one corner. Captions are
+     kept to two lines or so, which is what keeps the measure tolerable. */
+  .shot figcaption {
+    font-size: .92rem; color: var(--muted); line-height: 1.6;
+  }
+  .shot figcaption b { color: var(--fg-strong); font-weight: 650; }
+
+  /* Paired shots are cropped to matching aspect ratios upstream in
+     optimize.mjs, so the frames line up without any CSS cropping here. */
+  .shot-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.4rem; align-items: start;
+  }
+
+  /* ===================================================================
+     SECTIONS
+     =================================================================== */
+  .section {
+    padding-block: clamp(2.8rem, 7vw, 4.4rem);
+    border-bottom: 1px solid var(--line-soft);
+    scroll-margin-top: 4.5rem; /* clear the sticky topbar on anchor jumps */
+  }
+  .section:last-of-type { border-bottom: 0; }
+  .sec-head { display: flex; flex-direction: column; gap: .55rem; margin-bottom: 1.9rem; }
+  .sec-head h2 { font-size: clamp(1.5rem, 3.3vw, 2rem); max-width: 24ch; }
+  .sec-head p { color: var(--muted); }
+  .body-text strong { color: var(--fg-strong); font-weight: 650; }
+  h3.sub { font-size: 1.12rem; letter-spacing: -.015em; }
+
+  /* ===================================================================
+     PANELS / CARDS
+     =================================================================== */
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.15rem 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: .9rem; }
+
+  /* ===================================================================
+     STAT STRIP — scale at a glance, before the detail
+     =================================================================== */
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--line);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; margin-bottom: 1.6rem;
+  }
+  .stats div { background: var(--surface); padding: 1rem .95rem; display: flex; flex-direction: column; gap: .2rem; }
+  .stats b {
+    font-family: var(--font-display); font-size: 1.75rem;
+    font-weight: 800; letter-spacing: -.03em; color: var(--fg-strong);
+    font-variant-numeric: tabular-nums; line-height: 1.05;
+  }
+  .stats span {
+    font-family: var(--font-mono); font-size: .64rem;
+    letter-spacing: .11em; text-transform: uppercase; color: var(--muted-dim);
+  }
+  @media (max-width: 620px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ===================================================================
+     STATUS PILLS — state encoded in form as well as word
+     =================================================================== */
+  .pill {
+    display: inline-flex; align-items: center; gap: .38rem;
+    font-family: var(--font-mono); font-size: .68rem;
+    letter-spacing: .05em; text-transform: uppercase; font-weight: 600;
+    padding: .18rem .5rem .2rem; border-radius: 999px;
+    border: 1px solid; white-space: nowrap;
+  }
+  .pill::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex: none; }
+  .pill.live    { color: var(--ok);        border-color: color-mix(in srgb, var(--ok) 40%, transparent);   background: color-mix(in srgb, var(--ok) 10%, transparent); }
+  .pill.partial { color: var(--warn);      border-color: color-mix(in srgb, var(--warn) 40%, transparent); background: color-mix(in srgb, var(--warn) 10%, transparent); }
+  .pill.stub    { color: var(--muted-dim); border-color: var(--line); background: transparent; }
+
+  /* ===================================================================
+     EXHIBITS
+     =================================================================== */
+  .exhibit { margin-block: 1.5rem; }
+  .exhibit-cap {
+    font-family: var(--font-mono); font-size: .7rem;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted-dim); margin-top: .7rem;
+  }
+  .scroller { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+
+  /* Architecture diagram — hand-built so it themes correctly */
+  .arch { display: flex; flex-direction: column; min-width: 620px; padding: 1.35rem; }
+  .tier {
+    display: flex; flex-direction: column; gap: .7rem;
+    padding: 1rem 1.1rem; border: 1px solid var(--line);
+    border-radius: var(--radius); background: var(--surface-2);
+  }
+  .tier-label {
+    font-family: var(--font-mono); font-size: .67rem;
+    letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600;
+    display: flex; justify-content: space-between; gap: 1rem;
+  }
+  .tier-label span:last-child { color: var(--muted-dim); font-weight: 400; }
+  .nodes { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .node {
+    flex: 1 1 auto; min-width: 110px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 7px;
+    padding: .55rem .7rem; font-size: .82rem; font-weight: 600;
+    color: var(--fg-strong); line-height: 1.3;
+  }
+  .node small {
+    display: block; font-family: var(--font-mono); font-size: .66rem;
+    font-weight: 400; color: var(--muted-dim); margin-top: .18rem;
+  }
+  .node.accent { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .connector {
+    display: flex; align-items: center; justify-content: center; gap: .55rem;
+    padding: .5rem 0; font-family: var(--font-mono);
+    font-size: .68rem; color: var(--muted-dim);
+  }
+  .connector::before, .connector::after {
+    content: ""; height: 1px; flex: 1;
+    background: linear-gradient(90deg, transparent, var(--line), transparent);
+  }
+
+  /* ===================================================================
+     TABLE
+     =================================================================== */
+  table { width: 100%; border-collapse: collapse; font-size: .89rem; min-width: 620px; }
+  thead th {
+    font-family: var(--font-mono); font-size: .67rem;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted-dim); font-weight: 600; text-align: left;
+    padding: .8rem 1rem; border-bottom: 1px solid var(--line);
+    background: var(--surface-2); white-space: nowrap;
+  }
+  tbody td { padding: .72rem 1rem; border-bottom: 1px solid var(--line-soft); vertical-align: top; color: var(--muted); line-height: 1.5; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody td:first-child { color: var(--fg-strong); font-weight: 600; white-space: nowrap; }
+
+  /* Four columns of phrases, not labels — the first column has to wrap here,
+     and the whole table needs more room than the two-column scope table. */
+  table.decisions { min-width: 740px; }
+  table.decisions td { font-size: .84rem; }
+  table.decisions td:first-child { white-space: normal; width: 22%; }
+
+  /* ===================================================================
+     SEQUENCE — numbered because this genuinely IS a sequence
+     =================================================================== */
+  .flow { display: flex; flex-direction: column; }
+  .step { display: grid; grid-template-columns: auto 1fr; gap: 1rem; padding: 1rem 0; border-bottom: 1px dashed var(--line); }
+  .step:last-child { border-bottom: 0; }
+  .step-n {
+    font-family: var(--font-mono); font-size: .72rem; font-weight: 700;
+    color: var(--accent); width: 1.9rem; height: 1.9rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    border-radius: 50%; display: grid; place-items: center; flex: none;
+    background: var(--accent-ghost);
+  }
+  .step-b { display: flex; flex-direction: column; gap: .35rem; }
+  .step-b h4 { font-size: .97rem; letter-spacing: -.01em; }
+  .step-b p { font-size: .89rem; color: var(--muted); line-height: 1.55; }
+  .state {
+    font-family: var(--font-mono); font-size: .7rem;
+    color: var(--accent-soft); background: var(--accent-ghost);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    padding: .08rem .35rem; border-radius: 4px; white-space: nowrap;
+  }
+
+  /* Position vocabulary, straight from the real enum */
+  .positions { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .pos {
+    font-family: var(--font-mono); font-size: .72rem;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 5px;
+    padding: .25rem .5rem; background: var(--surface-2);
+  }
+
+  /* Contribution split */
+  .split { display: flex; height: 9px; border-radius: 999px; overflow: hidden; border: 1px solid var(--line); background: var(--surface-2); }
+  .split i { display: block; height: 100%; }
+  .split-key { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: .82rem; color: var(--muted); }
+  .split-key span { display: inline-flex; align-items: center; gap: .45rem; }
+  .swatch { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+
+  /* ===================================================================
+     LISTS
+     Marker is positioned, NOT a grid column. A two-column grid here would
+     promote <strong> and the text after it into separate grid items and
+     tear the line apart — keep content in normal inline flow.
+     =================================================================== */
+  ul.ticks { list-style: none; display: flex; flex-direction: column; gap: .55rem; padding: 0; }
+  ul.ticks li { position: relative; padding-left: 1.6rem; font-size: .94rem; color: var(--muted); line-height: 1.6; }
+  ul.ticks li::before {
+    content: "→"; position: absolute; left: 0; top: 0;
+    font-family: var(--font-mono); color: var(--accent);
+    font-size: .85rem; line-height: 1.6;
+  }
+  ul.ticks li strong { color: var(--fg-strong); font-weight: 600; }
+
+  .callout {
+    border-left: 2px solid var(--accent); background: var(--accent-ghost);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: .95rem 1.15rem; font-size: .93rem; color: var(--fg); line-height: 1.6;
+  }
+  .callout strong { color: var(--fg-strong); }
+
+  .footer { border-top: 1px solid var(--line); padding-block: 2.5rem 3.5rem; color: var(--muted-dim); font-size: .85rem; }
+  .footer .mono { font-size: .74rem; letter-spacing: .04em; }
+  .contact {
+    display: flex; flex-wrap: wrap; gap: .6rem 1.6rem; align-items: baseline;
+    padding-bottom: 1.4rem; margin-bottom: 1.4rem;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .contact .who { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; color: var(--fg-strong); letter-spacing: -.02em; }
+  .contact a { color: var(--fg); text-decoration: none; font-weight: 600; }
+  .contact a:hover { color: var(--accent); }
+  .contact .sep { color: var(--muted-dim); }
+
+  /* ===================================================================
+     MOTION — one quiet entrance
+     =================================================================== */
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .rise { animation: rise .6s cubic-bezier(.22,1,.36,1) backwards; }
+  .rise:nth-child(2) { animation-delay: .06s; }
+  .rise:nth-child(3) { animation-delay: .12s; }
+  .rise:nth-child(4) { animation-delay: .18s; }
+  .rise:nth-child(5) { animation-delay: .24s; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  /* ===================================================================
+     PORTFOLIO SHELL — home (project grid) vs a single project view.
+     One page, two views, switched by a hash router. body[data-view]
+     decides which is on screen and what the topbar shows.
+     =================================================================== */
+  /* Default (no data-view yet, before JS runs) shows home — no flash. */
+  .home-view { display: block; }
+  .project-view { display: none; }
+  body[data-view="project"] .home-view { display: none; }
+  body[data-view="project"] .project-view[data-active="true"] { display: block; }
+
+  /* topbar bits that are context-dependent */
+  .nav-project { display: none; }
+  body[data-view="project"] .nav-project { display: flex; gap: 1.1rem; align-items: center; flex-wrap: wrap; }
+  body[data-view="project"] .nav-home { display: none; }
+
+  /* ---- home hero: a restrained masthead, not a manifesto ---- */
+  .home-hero {
+    position: relative; overflow: hidden;
+    padding-block: clamp(2.4rem, 6vw, 3.6rem) clamp(1.4rem, 3vw, 2rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .home-hero::before {
+    content: ""; position: absolute; top: -60%; left: 0;
+    width: min(680px, 90vw); height: 620px;
+    background: radial-gradient(ellipse 50% 50% at 30% 50%, var(--accent-ghost) 0%, transparent 72%);
+    pointer-events: none;
+  }
+  .home-hero > * { position: relative; }
+  .home-hero h1 { font-size: clamp(2rem, 5vw, 3rem); }
+  .home-hero .lead { font-size: clamp(1rem, 2vw, 1.15rem); color: var(--muted); line-height: 1.5; }
+
+  /* ---- project grid ---- */
+  .grid-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap; margin-bottom: 1.4rem;
+  }
+  .grid-head h2 { font-size: clamp(1.3rem, 3vw, 1.7rem); }
+  .carousel-controls { display: flex; align-items: center; gap: 1rem; }
+  .grid-head .count {
+    font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted-dim);
+  }
+
+  /* ---- carousel: vertical cards in a horizontal scroll-snap track. Two sit
+     side by side and fill the width; more projects scroll into a carousel,
+     driven by the arrows (which hide themselves when nothing overflows). ---- */
+  .carousel { position: relative; }
+  .project-track {
+    display: flex; gap: 1.2rem;
+    overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; scroll-behavior: smooth;
+    padding-bottom: .7rem;
+    scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+  }
+  .project-track::-webkit-scrollbar { height: 7px; }
+  .project-track::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .project-track::-webkit-scrollbar-track { background: transparent; }
+
+  .project-card, .ghost-card {
+    flex: 0 0 clamp(280px, 48%, 520px);
+    scroll-snap-align: start;
+  }
+  @media (max-width: 640px) { .project-card, .ghost-card { flex: 0 0 86%; } }
+
+  .project-card {
+    display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); overflow: hidden;
+    text-decoration: none; color: inherit;
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+  }
+  .project-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+    box-shadow: var(--shadow);
+  }
+  .thumb {
+    aspect-ratio: 16 / 9; overflow: hidden; background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .card-body { padding: 1.1rem 1.25rem 1.3rem; display: flex; flex-direction: column; gap: .6rem; flex: 1; }
+
+  /* nav arrows */
+  .carousel-nav { display: flex; gap: .45rem; }
+  .carousel-nav button {
+    width: 34px; height: 34px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+    font-size: 1rem; line-height: 1; display: grid; place-items: center;
+    transition: border-color .14s ease, color .14s ease, opacity .14s ease;
+  }
+  .carousel-nav button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .carousel-nav button:disabled { opacity: .35; cursor: default; }
+
+  .card-eyebrow {
+    font-family: var(--font-mono); font-size: .66rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--accent); font-weight: 600;
+    display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  }
+  .card-body h3 { font-size: 1.15rem; letter-spacing: -.015em; }
+  .card-body p { font-size: .92rem; color: var(--muted); line-height: 1.55; margin: 0; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .1rem; }
+  .card-cta {
+    margin-top: auto; font-weight: 650; font-size: .9rem; color: var(--accent);
+    display: inline-flex; align-items: center; gap: .4rem;
+  }
+  .project-card:hover .card-cta { gap: .6rem; }
+
+  /* a muted placeholder card so the carousel still reads as a set; stretches
+     to match the real card's height alongside it */
+  .ghost-card {
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    border: 1px dashed var(--line); border-radius: var(--radius);
+    background: transparent; color: var(--muted-dim);
+    padding: 1.6rem 1.25rem;
+    font-size: .9rem; line-height: 1.5;
+  }
+
+  /* back-to-projects link atop a project view */
+  .backlink {
+    display: inline-flex; align-items: center; gap: .45rem;
+    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--muted); text-decoration: none;
+    padding: 1.4rem 0 0;
+  }
+  .backlink:hover { color: var(--accent); }
+</style>
+
+<!-- ================================================================= -->
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="topbar-mark" href="#home" style="text-decoration:none;"><span class="dot"></span> David Gosal</a>
+    <nav class="topbar-nav nav-home">
+      <a href="#projects">Projects</a>
+      <a href="mailto:dgjy2019@gmail.com">Contact</a>
+    </nav>
+    <nav class="topbar-nav nav-project">
+      <a href="#home">← All projects</a>
+      <a href="#tour">Product</a>
+      <a href="#scope">Scope</a>
+      <a href="#ownership">Ownership</a>
+      <a href="#architecture">Architecture</a>
+      <a class="live" href="https://sportclub-6d9de.firebaseapp.com/login" target="_blank" rel="noopener">Live ↗</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================ HOME VIEW ============================ -->
+<div id="home" class="home-view">
+<section class="home-hero" id="home-hero">
+  <div class="wrap-wide stack-s">
+    <p class="eyebrow rise">David Gosal</p>
+    <h1 class="rise">Full-stack developer</h1>
+    <p class="lead rise">Backend &amp; data by focus, end to end through the deploy. Based in Indonesia.</p>
+  </div>
+</section>
+
+<section class="section" id="projects">
+  <div class="wrap-wide">
+    <div class="grid-head">
+      <h2>Selected work</h2>
+      <div class="carousel-controls">
+        <span class="count">1 project</span>
+        <div class="carousel-nav" data-carousel-nav>
+          <button type="button" data-carousel-prev aria-label="Previous projects">←</button>
+          <button type="button" data-carousel-next aria-label="Next projects">→</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="carousel">
+      <div class="project-track" id="project-track">
+        <a class="project-card" href="#project-lw-sports" data-project-link="lw-sports">
+          <div class="thumb"><img src="{{IMG:09-meet}}" alt="LW Sports Community — a meet detail page showing slots, host mode and a slot-trading tab." loading="lazy"></div>
+          <div class="card-body">
+            <p class="card-eyebrow">Full-stack · case study <span class="pill live">Live</span></p>
+            <h3>LW Sports Community</h3>
+            <p>A sports community platform where a match slot is an asset players buy, sell and transfer.</p>
+            <div class="card-tags">
+              <span class="pos">react</span><span class="pos">node</span><span class="pos">mongodb</span><span class="pos">cloud-run</span>
+            </div>
+            <span class="card-cta">View case study →</span>
+          </div>
+        </a>
+
+        <div class="ghost-card">
+          <div>
+            <strong style="display:block; color:var(--muted); font-weight:650; margin-bottom:.3rem;">More coming</strong>
+            New case studies land here as they ship.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div><!-- /#home -->
+
+<!-- ====================== PROJECT: LW SPORTS ====================== -->
+<div class="project-view" id="project-lw-sports" data-project="lw-sports">
+  <div class="wrap"><a class="backlink" href="#home">← All projects</a></div>
+
+<!-- ================================================================= -->
+<section class="header">
+  <div class="wrap stack">
+    <p class="eyebrow rise">Full-stack case study · Oct 2025 – Jul 2026</p>
+    <h1 class="rise">A sports community platform with real money moving through it.</h1>
+    <p class="standfirst rise">
+      LW Sports Community Indonesia helps amateur footballers find a game, join a club,
+      and pay for their spot. What began as a directory grew into something harder:
+      <strong>a scheduling and payments system</strong> where a slot in a Saturday
+      match is an asset a player can buy, sell, and transfer.
+    </p>
+
+    <div class="btn-row rise">
+      <a class="btn btn-primary" href="https://sportclub-6d9de.firebaseapp.com/login" target="_blank" rel="noopener">
+        Open the live product ↗
+      </a>
+      <a class="btn btn-ghost" href="#tour">See the screens</a>
+    </div>
+
+    <dl class="demo rise">
+      <p class="demo-label">Demo login</p>
+      <div class="demo-pair"><dt>Email</dt><dd>david@gmail.com</dd></div>
+      <div class="demo-pair"><dt>Password</dt><dd>Password12</dd></div>
+      <p class="demo-note">
+        A shared demo account on a live beta — please browse rather than edit, and
+        note that other people's real clubs and matches are visible inside.
+      </p>
+    </dl>
+
+    <dl class="meta rise">
+      <div><dt>Role</dt><dd>Full-stack, backend lead</dd></div>
+      <div><dt>Team</dt><dd>2 developers</dd></div>
+      <div><dt>Timeline</dt><dd>9 months</dd></div>
+      <div><dt>Status</dt><dd>Beta · live</dd></div>
+    </dl>
+
+    <figure class="shot rise" style="margin-top: 1rem;">
+      <div class="shot-frame">
+        <div class="shot-bar">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="route">sportclub-6d9de.firebaseapp.com/meets/:id</span>
+        </div>
+        <img src="{{IMG:09-meet}}" alt="A meet detail page showing 3 of 14 slots filled, host mode, and tabs for participants, matches, fees, slot trading and chat." loading="lazy">
+      </div>
+      <figcaption>
+        <b>A single match.</b> Capacity reads <span class="mono">3/14 slot terisi</span>
+        because slots are individually tracked, not counted — which is what makes the
+        <span class="mono">Jual/Beli Slot</span> tab in the bar below it possible at all.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="context">
+  <div class="wrap">
+    <div class="col stack">
+      <div class="sec-head">
+        <p class="eyebrow">The problem</p>
+        <h2>Pickup football runs on group chats — and breaks there</h2>
+      </div>
+
+      <p class="body-text">
+        In Indonesia, a weekly mini-soccer game is organised in a WhatsApp group.
+        The organiser counts heads by scrolling, collects fees by bank transfer,
+        and screenshots the receipts. When someone drops out on Friday night, the
+        slot is resold in the chat — and whether the replacement actually paid is
+        anyone's guess.
+      </p>
+      <p class="body-text">
+        The product's job is to absorb that entire workflow. That makes it far less
+        a social app than it first appears: <strong>the hard parts are capacity,
+        money, and state</strong>. Who holds which position, who has paid, by when,
+        and what happens automatically when they don't.
+      </p>
+
+      <div class="callout">
+        <strong>The constraint that shaped everything:</strong> Indonesian amateur
+        sport runs on direct bank transfer, not card rails. No payment processor was
+        in scope. The system therefore had to model an out-of-app payment it cannot
+        observe — proof upload, human verification, deadlines and automatic expiry —
+        rather than simply reading a webhook.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="tour">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">The product</p>
+      <h2>What it looks like in use</h2>
+      <p>
+        Screens captured from the live deployment. The product ships in Bahasa
+        Indonesia — its users are Indonesian — so captions carry the translation.
+        Personal details have been replaced with placeholders.
+      </p>
+    </div>
+
+    <div class="stack" style="gap: 2.4rem;">
+      <div class="shot-grid">
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/landing</span>
+            </div>
+            <img src="{{IMG:01-landing}}" alt="Public landing page for LW Sports Community Indonesia." loading="lazy">
+          </div>
+          <figcaption><b>Public landing.</b> The only surface visible before sign-in.</figcaption>
+        </figure>
+
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/home</span>
+            </div>
+            <img src="{{IMG:02-home}}" alt="Authenticated home screen showing profile completion prompt and the user's clubs." loading="lazy">
+          </div>
+          <figcaption><b>Home.</b> Onboarding prompts, the player's clubs, and time-based filters for finding a game.</figcaption>
+        </figure>
+      </div>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/register</span>
+          </div>
+          <img src="{{IMG:11-register-1}}" alt="Registration step one of five, with a nested three-part personal data section." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Onboarding.</b> Five steps, with step one split into three parts again.
+          The last two — positions and a skills self-assessment — are what feed the
+          rating engine, so the length is deliberate.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/club/:slug</span>
+          </div>
+          <img src="{{IMG:08-club}}" alt="Club profile page showing tabs for summary, activities, members, requests, membership, media and discussion." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Club management.</b> Seven tabs behind one club — activities, members,
+          join requests, paid memberships, media and a discussion feed. This is the
+          admin surface that replaces the group chat.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/meets/create</span>
+          </div>
+          <img src="{{IMG:10-create-meet}}" alt="The four-step meet creation wizard: feature, schedule, capacity and fees, settings." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Creating a match.</b> Four steps — feature, schedule, capacity &amp; fees,
+          settings. A paid match with position-aware capacity carries too many decisions
+          for one screen, and the first step alone decides whether the meet gets the full
+          machinery or is just a listing.
+        </figcaption>
+      </figure>
+
+      <div class="shot-grid">
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/home?view=discover</span>
+            </div>
+            <img src="{{IMG:05-discovery-meets}}" alt="Discovery screen with search, location and sport filters, and a horizontal date strip." loading="lazy">
+          </div>
+          <figcaption><b>Discovery.</b> Filter by sport and location, then scan forward day by day.</figcaption>
+        </figure>
+
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/profile</span>
+            </div>
+            <img src="{{IMG:06-profile}}" alt="Player profile with contact details, physical attributes and sport profile." loading="lazy">
+          </div>
+          <figcaption><b>Player profile.</b> Sport profile, position and self-assessed level feed the rating engine.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="scope">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">Delivered scope</p>
+      <h2>What actually shipped, and what didn't</h2>
+      <p>Honest status per module. A portfolio that marks everything green isn't much use, so partial and unbuilt work is listed too.</p>
+    </div>
+
+    <dl class="stats">
+      <div><b>10</b><span>Modules live</span></div>
+      <div><b>171</b><span>API endpoints</span></div>
+      <div><b>32</b><span>Data models</span></div>
+      <div><b>552</b><span>Commits</span></div>
+    </dl>
+
+    <div class="exhibit">
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Module</th><th>Status</th><th>What it covers</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Identity &amp; onboarding</td><td><span class="pill live">Live</span></td><td>Firebase Auth, Google OAuth, email OTP, multi-step player onboarding</td></tr>
+            <tr><td>Player rating</td><td><span class="pill live">Live</span></td><td>Self-assessed skills → weighted engine → six-stat player card, separate outfield and goalkeeper scopes</td></tr>
+            <tr><td>Clubs</td><td><span class="pill live">Live</span></td><td>Roles, invite links, join approval, media gallery, discussion feed, rules acceptance, per-club permissions</td></tr>
+            <tr><td>Meets &amp; slots</td><td><span class="pill live">Live</span></td><td>Position-aware capacity, member vs non-member pricing, invitations, attendance, recurring series</td></tr>
+            <tr><td>Payments &amp; grace periods</td><td><span class="pill live">Live</span></td><td>Proof upload, host verification, per-person deadline overrides, automatic expiry and slot release</td></tr>
+            <tr><td>Slot marketplace</td><td><span class="pill live">Live</span></td><td>List, claim, pay, verify, transfer — with admin override and claim release on rejection</td></tr>
+            <tr><td>Play memberships</td><td><span class="pill live">Live</span></td><td>Recurring paid club programmes, enrolment approval, waitlist promotion, scheduled activation and closure</td></tr>
+            <tr><td>Social graph</td><td><span class="pill live">Live</span></td><td>Follows, follow requests, mutuals, blocking, per-field privacy</td></tr>
+            <tr><td>Discovery</td><td><span class="pill live">Live</span></td><td>Players, clubs and meets filtered by sport, level, time and mapped location</td></tr>
+            <tr><td>Inbox</td><td><span class="pill live">Live</span></td><td>Messages and notifications, folders, starring, bulk actions, deep links</td></tr>
+            <tr><td>Admin console</td><td><span class="pill partial">Partial</span></td><td>Dashboard overview and user CRUD. No moderation queue or audit log yet</td></tr>
+            <tr><td>User settings</td><td><span class="pill stub">Not built</span></td><td>Privacy API exists and is used elsewhere; the settings screen itself is a placeholder</td></tr>
+            <tr><td>Match scoring</td><td><span class="pill stub">Not built</span></td><td>Team split and live scoring — designed, deliberately deferred</td></tr>
+            <tr><td>Competitions</td><td><span class="pill stub">Not built</span></td><td>Tournaments and leagues. Marketing pages only; no backend</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="exhibit-cap">Verified against the codebase.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="ownership">
+  <div class="wrap">
+    <div class="col stack">
+      <div class="sec-head">
+        <p class="eyebrow">Ownership</p>
+        <h2>A two-person build, and who carried what</h2>
+      </div>
+
+      <p class="body-text">
+        552 commits over nine months, split between two developers. I opened the
+        project and owned the foundations; my collaborator drove much of the later
+        feature UI. Being specific about the seam matters more than claiming the
+        whole thing.
+      </p>
+
+      <div class="stack-s">
+        <div class="split" role="img" aria-label="Commit split of 552 total: 210 mine, 338 my collaborator's, 4 from a shared organisation account">
+          <i style="width:38.0%; background: var(--accent);"></i>
+          <i style="width:61.2%; background: var(--navy);"></i>
+          <i style="width:0.7%;  background: var(--muted-dim);"></i>
+        </div>
+        <div class="split-key">
+          <span><i class="swatch" style="background: var(--accent);"></i> Mine — 210 commits</span>
+          <span><i class="swatch" style="background: var(--navy);"></i> Collaborator — 338</span>
+          <span><i class="swatch" style="background: var(--muted-dim);"></i> Shared org account — 4</span>
+        </div>
+      </div>
+
+      <p class="body-text" style="font-size:.9rem; color:var(--muted);">
+        Commit count is a rough proxy, not a measure of contribution — the
+        foundational work below landed in fewer, larger commits early on.
+      </p>
+
+      <h3 class="sub">What I owned end to end</h3>
+      <ul class="ticks">
+        <li><strong>Data model.</strong> All 32 Mongoose schemas and their domain grouping — identity, community, social, sports — including the slot, participant, enrolment and transfer models the money features depend on.</li>
+        <li><strong>Backend.</strong> The Express API: 171 route handlers across 35 modules, plus the business-logic layer beneath them.</li>
+        <li><strong>Authentication.</strong> Firebase Auth end to end — token verification middleware, Google OAuth, email OTP delivery, and the role model behind admin access.</li>
+        <li><strong>Infrastructure.</strong> Containerised the API and deployed it to Cloud Run; set up Firebase Hosting for the frontend, Google Cloud Storage for uploads, and the environment and CORS configuration across both. Also hardened the membership scheduler for scale-to-zero with a secret-protected external-trigger endpoint.</li>
+        <li><strong>Initial frontend.</strong> The first implementation of the app shell, routing, route guards, and the service layer every screen calls through.</li>
+        <li><strong>Debugging.</strong> Cross-cutting defects — a production-only timezone bug that shifted every evening match by a day being the one with the widest blast radius.</li>
+      </ul>
+
+      <h3 class="sub">What my collaborator led</h3>
+      <ul class="ticks">
+        <li>The bulk of feature-level UI — club profile, meet creation flow, membership management screens, and the participant management rebuild.</li>
+        <li>Design iteration across the club and meet surfaces, including dark mode.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="architecture">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">Architecture</p>
+      <h2>Three tiers, and one rule about where logic lives</h2>
+      <p>Conventional shape, deliberately. The one opinionated choice is that business logic sits below the HTTP layer, not inside it.</p>
+    </div>
+
+    <div class="exhibit">
+      <div class="scroller">
+        <div class="arch">
+          <div class="tier">
+            <div class="tier-label"><span>Client</span><span>Firebase Hosting</span></div>
+            <div class="nodes">
+              <div class="node">React 19 <small>SPA · Router 7</small></div>
+              <div class="node">Tailwind <small>+ Framer Motion</small></div>
+              <div class="node">Leaflet / Mapbox <small>venue selection</small></div>
+              <div class="node accent">Service layer <small>12 API clients</small></div>
+            </div>
+          </div>
+          <div class="connector">HTTPS · Firebase ID token</div>
+          <div class="tier">
+            <div class="tier-label"><span>API</span><span>Cloud Run · asia-southeast2</span></div>
+            <div class="nodes">
+              <div class="node accent">Auth middleware <small>token → user</small></div>
+              <div class="node">Route modules <small>35 files · 171 handlers</small></div>
+              <div class="node accent">Domain logic <small>51 Express-free modules</small></div>
+              <div class="node">Scheduler <small>membership lifecycle</small></div>
+            </div>
+          </div>
+          <div class="connector">Mongoose 8</div>
+          <div class="tier">
+            <div class="tier-label"><span>Data &amp; services</span><span>managed</span></div>
+            <div class="nodes">
+              <div class="node">MongoDB <small>32 schemas</small></div>
+              <div class="node">Cloud Storage <small>media · proofs</small></div>
+              <div class="node">Firebase Auth <small>identity</small></div>
+              <div class="node">SMTP <small>OTP delivery</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="exhibit-cap">Request path, top to bottom.</p>
+    </div>
+
+    <div class="col stack">
+      <p class="body-text">
+        One rule keeps the backend maintainable: <strong>the route files don't make
+        decisions.</strong> A route's only job is to read the incoming request and send
+        a response back. The real work — pricing a slot, working out when an unpaid spot
+        expires, transferring a booking to another player — lives in its own module that
+        knows nothing about the web: it never touches Express, it just takes values in and
+        returns values out. Those modules hold the logic; the routes are a thin layer on top.
+      </p>
+      <p class="body-text">It earns its keep whenever a feature needs a second caller:</p>
+      <ul class="ticks">
+        <li><strong>Admin override on slot resale.</strong> The transfer logic was already independent of the request, so adding an admin path was a branch on permission — not a second implementation of the transfer.</li>
+        <li><strong>Shared payment deadlines.</strong> Meets and memberships computed expiry by identical rules; that resolution is now one unit-tested module both call, so the calculation deciding whether someone keeps their spot has a single definition, not two copies drifting apart.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="decisions">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">Decisions</p>
+      <h2>Four decisions, and what each one cost</h2>
+      <p>
+        Every one had a cheaper alternative. None of them were free.
+      </p>
+    </div>
+
+    <div class="exhibit">
+      <div class="scroller">
+        <table class="decisions">
+          <thead>
+            <tr>
+              <th>Decision</th>
+              <th>Instead of</th>
+              <th>What it bought</th>
+              <th>What it cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Payment is never observed directly</td>
+              <td>Waiting on a payment processor</td>
+              <td>Paid features could ship at all, on the rails Indonesian amateur sport actually uses</td>
+              <td>Proof, deadlines and expiry on every paid surface — the largest single source of complexity</td>
+            </tr>
+            <tr>
+              <td>Recurring meets are real rows</td>
+              <td>One meet plus a repeat rule</td>
+              <td>Each occurrence owns its roster, payments and resales</td>
+              <td>Writes multiply; generation capped at 104 occurrences</td>
+            </tr>
+            <tr>
+              <td>Capacity is modelled, not counted</td>
+              <td>An integer of free places</td>
+              <td>Position-aware pricing, member rates, and a slot that can be sold</td>
+              <td>Many more rows, and real concurrency care</td>
+            </tr>
+            <tr>
+              <td>Enums defined once, served to the client</td>
+              <td>Duplicating the list in the frontend</td>
+              <td>UI options can never drift from what the database accepts</td>
+              <td>One extra request on load</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="exhibit-cap">Row one drives everything below.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="problems">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">Hard problems</p>
+      <h2>Two that took real thought</h2>
+    </div>
+
+    <div class="col stack">
+      <h3 class="sub">1 · Selling a slot when the platform can't see the money</h3>
+      <p class="body-text">
+        A player who can't make Saturday should be able to sell their spot. But
+        payment happens by bank transfer, outside the system entirely. The platform
+        can never confirm funds moved — so it has to make the humans confirm it,
+        while preventing the obvious abuses: double-selling one slot, or a buyer
+        claiming a spot and never paying.
+      </p>
+
+      <div class="exhibit">
+        <div class="flow panel">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div class="step-b">
+              <h4>Seller lists a confirmed slot <span class="state">pending</span></h4>
+              <p>Only a slot they actually hold, on a meet that hasn't started.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div class="step-b">
+              <h4>Buyer claims it <span class="state">claimed</span></h4>
+              <p>The oldest listing is claimed first, the slot is reserved against other buyers, and only now are the seller's bank details revealed.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div class="step-b">
+              <h4>Buyer pays out of app, uploads proof <span class="state">pending_review</span></h4>
+              <p>The transfer receipt is stored as evidence for a human to judge.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-n">4</div>
+            <div class="step-b">
+              <h4>Seller or club admin decides <span class="state">completed</span></h4>
+              <p>Acceptance transfers slot ownership atomically. Rejection releases the claim and returns the listing to the pool — it does not strand it.</p>
+            </div>
+          </div>
+        </div>
+        <p class="exhibit-cap">Escrow without an escrow provider.</p>
+      </div>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/meets/:id → Jual/Beli Slot</span>
+          </div>
+          <img src="{{IMG:17-meet-slotmarket}}" alt="The slot marketplace tab, explaining claim, direct payment to the seller, proof upload and confirmation." loading="lazy">
+        </div>
+        <figcaption>
+          <b>The same flow, shipped.</b> The product states it plainly to users:
+          <i>claim a slot from the queue, pay the seller directly, upload proof, then
+          the seller or an admin confirms the transfer.</i> Empty here because no slot
+          is currently listed on this match.
+        </figcaption>
+      </figure>
+
+      <p class="body-text">
+        The admin override in step four is the detail that makes it usable. Sellers
+        go quiet; without a second party who can accept, a paid buyer would be stuck
+        indefinitely.
+      </p>
+    </div>
+
+    <div class="col stack" style="margin-top: 2.4rem;">
+      <h3 class="sub">2 · Position-aware capacity</h3>
+      <p class="body-text">
+        "Twelve players" is not a useful description of a football match. The system
+        models capacity per role and position category, drawn from one shared
+        vocabulary covering football, futsal and mini soccer:
+      </p>
+      <div class="positions">
+        <span class="pos">any</span><span class="pos">gk</span><span class="pos">def</span>
+        <span class="pos">mid</span><span class="pos">att</span><span class="pos">universal</span>
+        <span class="pos">futsal-gk</span><span class="pos">anchor</span><span class="pos">winger</span>
+        <span class="pos">pivot</span>
+      </div>
+      <p class="body-text">
+        A recent refactor pushed this further: the participant management UI was
+        rebuilt to derive its options entirely from backend capacity data, so adding
+        a role or position on the server surfaces in the interface with no frontend
+        change. That deleted a 614-line configuration component outright.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="infra">
+  <div class="wrap">
+    <div class="col sec-head">
+      <p class="eyebrow">Delivery</p>
+      <h2>Infrastructure and operations</h2>
+    </div>
+
+    <div class="grid-3">
+      <div class="panel stack-s">
+        <h3 class="sub">Backend</h3>
+        <p style="font-size:.9rem; color:var(--muted);">Containerised and deployed to Google Cloud Run in <span class="mono">asia-southeast2</span>. Scales to zero, which suits a beta's traffic — and is what made cold-start readiness gating necessary rather than optional.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Frontend</h3>
+        <p style="font-size:.9rem; color:var(--muted);">Built and served from Firebase Hosting, with route-level code splitting so the landing pages don't carry the weight of the authenticated app.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Storage</h3>
+        <p style="font-size:.9rem; color:var(--muted);">Google Cloud Storage in production, local disk in development, behind one interface — plus proxy routes so media URLs never expose bucket paths.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Identity</h3>
+        <p style="font-size:.9rem; color:var(--muted);">Firebase Auth issues tokens; the API verifies them and resolves an application user and role on every request. Three sign-in paths converge on one identity.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Background work</h3>
+        <p style="font-size:.9rem; color:var(--muted);">An in-process scheduler activates due memberships, expires lapsed payments and closes finished periods — the automation that keeps club admins out of spreadsheets.</p>
+      </div>
+      <div class="panel stack-s">
+        <h3 class="sub">Environments</h3>
+        <p style="font-size:.9rem; color:var(--muted);">Staging and production separated by configuration, with an explicit CORS allowlist and credentials supplied by environment rather than committed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= -->
+<section class="section" id="status">
+  <div class="wrap">
+    <div class="col stack">
+      <div class="sec-head">
+        <p class="eyebrow">What's next</p>
+        <h2>The roadmap from here</h2>
+      </div>
+
+      <p class="body-text">
+        The platform is in active beta and deployed. Every module marked live above
+        works end to end. The work I'd prioritise next, in order:
+      </p>
+
+      <ul class="ticks">
+        <li><strong>Harden the diagnostic surface.</strong> A handful of development-only endpoints need locking down before general availability. First on the list.</li>
+        <li><strong>Automated tests around money.</strong> The domain logic was deliberately written free of Express so it can be tested directly. That affordance exists and hasn't been spent yet; the resale and payment state machines are where it should go first.</li>
+        <li><strong>Finish the settings screen.</strong> The privacy API is already live and consumed elsewhere — this is UI work against a working backend.</li>
+        <li><strong>Scheduler off the request path — endpoint built, deploy pending.</strong> The membership lifecycle ran only on an in-process timer, which stops when the service scales to zero. It now also runs behind a secret-protected job endpoint, so an external trigger (Cloud Scheduler) can advance it on a fixed cadence regardless of traffic; the in-process timer stays as a warm-container fallback. What remains is wiring the Scheduler job in the cloud console.</li>
+        <li><strong>Observability.</strong> Console logging is the current answer. Structured logs and error tracking are the gap between beta and something you'd run on call.</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Consolidated since:</strong> the grace-period deadline — the rule
+        that decides when an unpaid spot expires — had been copied almost
+        line-for-line between meets and memberships. It now lives in one shared,
+        unit-tested resolver both delegate to, verified behaviour-identical, so a
+        money-critical rule has exactly one definition instead of two that could
+        drift. (Slot resale is a claim-then-confirm flow with no deadline, so it
+        stays separate by design rather than being forced under the same roof.)
+      </div>
+
+      <div class="btn-row" style="margin-top: .6rem;">
+        <a class="btn btn-primary" href="https://sportclub-6d9de.firebaseapp.com/login" target="_blank" rel="noopener">Open the live product ↗</a>
+        <span class="mono" style="font-size:.78rem; color:var(--muted-dim);">
+          david@gmail.com · Password12
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap" style="padding-bottom: 2.5rem;">
+  <p class="col" style="font-size:.8rem; color:var(--muted-dim); line-height:1.55;">
+    Figures cited are drawn from the repository at the July 2026 revision.
+    Screenshots are from the live deployment, with personal details replaced.
+  </p>
+</div>
+</div><!-- /#project-lw-sports -->
+
+<!-- ================================================================= -->
+<footer class="footer">
+  <div class="wrap stack-s">
+    <div class="contact">
+      <span class="who">David Gosal</span>
+      <a href="mailto:dgjy2019@gmail.com">dgjy2019@gmail.com</a>
+      <span class="sep">·</span>
+      <a href="tel:+6281292899975">+62 812-9289-9975</a>
+    </div>
+    <p>
+      Full-stack developer based in Indonesia — backend and data by focus,
+      end to end through the deploy. Open to full-stack and backend roles.
+    </p>
+    <p class="mono">© 2026 DAVID GOSAL · BUILT BY HAND</p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    // One page, two views: a home grid and per-project case studies. The hash
+    // is the single source of truth, so the browser back button and deep links
+    // (e.g. .../#project-lw-sports) both work with no framework.
+    var projects = Array.prototype.map.call(
+      document.querySelectorAll(".project-view"),
+      function (v) { return v.getAttribute("data-project"); }
+    );
+
+    function setActive(id) {
+      document.querySelectorAll(".project-view").forEach(function (v) {
+        v.setAttribute("data-active", v.getAttribute("data-project") === id ? "true" : "false");
+      });
+    }
+
+    function showHome(target) {
+      document.body.setAttribute("data-view", "home");
+      setActive(null);
+      var el = target && document.getElementById(target);
+      if (el) { el.scrollIntoView(); } else { window.scrollTo(0, 0); }
+    }
+
+    function showProject(id) {
+      if (projects.indexOf(id) === -1) { showHome(); return; }
+      setActive(id);
+      document.body.setAttribute("data-view", "project");
+      window.scrollTo(0, 0);
+    }
+
+    function route() {
+      var hash = (location.hash || "").replace(/^#/, "");
+      if (!hash || hash === "home" || hash === "home-hero") { showHome(); return; }
+      if (hash === "projects") { showHome("projects"); return; }
+      var m = hash.match(/^project-(.+)$/);
+      if (m) { showProject(m[1]); return; }
+      // Any other hash is an in-project section anchor (#scope, #tour, ...).
+      // Meaningful only inside a project view; on home it's ignored so the
+      // browser's native scroll is a harmless no-op.
+      if (document.body.getAttribute("data-view") !== "project") { showHome(); }
+    }
+
+    // In-project section links (#scope, #tour, ...) scroll in place WITHOUT
+    // writing to the hash, so browser history only ever toggles home <-> project
+    // and the back button can't strand a section anchor on the home view.
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (!a) return;
+      var id = a.getAttribute("href").slice(1);
+      if (!id || id === "home" || id === "projects" || /^project-/.test(id)) return;
+      var el = document.getElementById(id);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      }
+    });
+
+    window.addEventListener("hashchange", route);
+    route();
+  })();
+
+  (function () {
+    // Project carousel. The arrows scroll one card at a time and disable at the
+    // ends; the whole control hides when nothing overflows (e.g. two cards that
+    // already fit), so a short list reads as a plain side-by-side row.
+    var track = document.getElementById("project-track");
+    var nav = document.querySelector("[data-carousel-nav]");
+    if (!track || !nav) return;
+    var prev = nav.querySelector("[data-carousel-prev]");
+    var next = nav.querySelector("[data-carousel-next]");
+
+    function stepBy() {
+      var card = track.querySelector(".project-card, .ghost-card");
+      var gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 19;
+      return card ? card.getBoundingClientRect().width + gap : track.clientWidth * 0.9;
+    }
+
+    function update() {
+      var maxScroll = track.scrollWidth - track.clientWidth;
+      var overflowing = maxScroll > 2;
+      nav.style.display = overflowing ? "flex" : "none";
+      if (!overflowing) return;
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= maxScroll - 2;
+    }
+
+    prev.addEventListener("click", function () { track.scrollBy({ left: -stepBy() }); });
+    next.addEventListener("click", function () { track.scrollBy({ left: stepBy() }); });
+    track.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    update();
+  })();
+</script>
