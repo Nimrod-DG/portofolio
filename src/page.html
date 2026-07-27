@@ -2237,6 +2237,28 @@
       <ul class="ticks">
         <li><strong>The audit log.</strong> Designed and specified during the MVP and deliberately not created — the tables are described, the write path is not. First job, because it is the thing an ERP is asked about first.</li>
         <li><strong>Reversal documents.</strong> Ledger corrections are currently new adjustment entries with a note. A first-class reversal that points at what it reverses is the difference between a correction and an explanation.</li>
+        <li>
+          <strong>Make the desktop screens as capable as the API behind them.</strong>
+          The clearest weakness in the product, and the gaps all have the same
+          shape — the server already does the work, and the interface never asks
+          for it. <em>Sorting:</em> every list endpoint sorts, by an allowlisted
+          column with a tie-broken <span class="mono">ORDER BY</span> so rows
+          cannot swap between pages — but no table sends a
+          <span class="mono">sort</span> parameter and no column header is
+          clickable, so a list cannot be reordered from the screen at all.
+          <em>Addressability:</em> page, search, status and supplier live in
+          component state rather than in the URL, so a filtered view cannot be
+          bookmarked, shared or recovered with the back button — even though the
+          receipt confirmation panel's <span class="mono">?sourceId=</span> links
+          already prove the pattern in the one place it mattered most.
+          <em>Density:</em> the layout switches between phone and desktop and
+          offers nothing in between, so a wide screen shows about ten rows of a
+          twenty-five-row page and leaves a third of its width empty. Bulk
+          actions, keyboard navigation and saved filter views belong in the same
+          pass. Paging itself is already server-side, with a bounded page size
+          and a mandatory total — this is the front end catching up with a
+          backend that is ahead of it.
+        </li>
         <li><strong>Approvals beyond one level.</strong> Value thresholds, delegation, and multi-step chains — the three things every real procurement department asks for immediately.</li>
         <li><strong>Finance past the stub.</strong> Invoicing, the payment cycle, and period close. The posting side already works; what's missing is everything that happens after.</li>
       </ul>
