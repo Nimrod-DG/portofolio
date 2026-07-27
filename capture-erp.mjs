@@ -14,11 +14,17 @@
 // app's preference defaults to "system" and a fresh context has an empty
 // localStorage, so the emulated preference decides — deterministically.
 import { chromium } from "playwright";
-import { mkdirSync } from "fs";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
 
 const BASE = "http://localhost:5173";
 const PASSWORD = "password123";
 const OUT = "./shots";
+// Where the content actually stops, per shot, as a fraction of the frame.
+// optimize.mjs crops to these rather than to hand-tuned numbers: a list screen's
+// content bottom moves whenever the page size, the filter row or the pagination
+// bar changes, and a stale fraction either clips a table or leaves dead canvas.
+const CROPS = `${OUT}/crop-erp.json`;
+const crops = {};
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 360, height: 780 };
@@ -51,11 +57,42 @@ async function settle(page) {
   await page.waitForTimeout(300);
 }
 
+/**
+ * How far down the frame the content reaches, as a fraction of the viewport.
+ *
+ * Measured from `<main>`'s deepest visible descendant, not from `<main>` itself:
+ * the shell lays the sidebar and the content column out as flex siblings, so
+ * both stretch to the taller of the two and `main`'s own box says nothing about
+ * where its content stops. Anything below that point is dead canvas.
+ */
+async function contentFraction(page) {
+  const measured = await page.evaluate(() => {
+    const main = document.querySelector("main");
+    if (!main) return null;
+    let bottom = 0;
+    for (const el of main.querySelectorAll("*")) {
+      const style = getComputedStyle(el);
+      if (style.visibility === "hidden" || style.display === "none") continue;
+      // A `fixed` element (the mobile tab bar) is pinned to the viewport and
+      // says nothing about the length of the content.
+      if (style.position === "fixed") continue;
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) bottom = Math.max(bottom, rect.bottom);
+    }
+    return { bottom, viewport: window.innerHeight };
+  });
+  if (!measured) return 1;
+  // 24px of breathing room under the last row, then clamped: a screenshot is
+  // viewport-sized, so nothing below the fold was captured to begin with.
+  return Math.min(1, Math.max(0.3, (measured.bottom + 24) / measured.viewport));
+}
+
 async function shoot(page, name) {
   await settle(page);
   const file = `${OUT}/erp-${name}.jpg`;
   await page.screenshot({ path: file, quality: 92, type: "jpeg" });
-  console.log(`  ✓ erp-${name}`);
+  crops[`erp-${name}`] = Number((await contentFraction(page)).toFixed(3));
+  console.log(`  ✓ erp-${name}  (content to ${(crops[`erp-${name}`] * 100).toFixed(0)}%)`);
 }
 
 async function go(page, path, { wait = "h1" } = {}) {
@@ -98,32 +135,86 @@ async function hrefFor(page, prefix, text) {
 
 const idFrom = (href) => href.split("/").pop();
 
+/**
+ * The same lookup, but through the screen's own search box first.
+ *
+ * Paging is why this exists. The default page size is five, so a list of nine
+ * products shows four of them nowhere — `hrefFor` alone found whatever happened
+ * to sort onto page 1 and threw on everything else. Searching narrows the list
+ * to the row being resolved, which also makes the lookup independent of how the
+ * list is sorted and of how many rows the seed grows to.
+ */
+async function hrefBySearch(page, path, searchLabel, prefix, text) {
+  await go(page, path);
+  await page.getByRole("searchbox", { name: searchLabel }).fill(text);
+  // The list refetches on every keystroke; wait for the row itself, not a timer.
+  await page.waitForFunction(
+    ([p, t]) =>
+      [...document.querySelectorAll(`a[href^="${p}"]`)].some((a) =>
+        a.textContent.includes(t),
+      ),
+    [prefix, text],
+    { timeout: 15000 },
+  );
+  await settle(page);
+  return hrefFor(page, prefix, text);
+}
+
+/** Open the account menu. The trigger's accessible name is the person's name,
+ *  which is what FE30 pins — so the first name is enough to find it. */
+async function openUserMenu(page, firstName) {
+  await page.getByRole("button", { name: new RegExp(firstName) }).click();
+  await page.waitForTimeout(200);
+}
+
 async function resolveIds(page) {
-  await go(page, "/procurement/orders");
   // Partly received (70 of 200): every screen in the receipt story then shows a
   // *derived* received quantity rather than a row of zeroes.
-  ids.po = idFrom(await hrefFor(page, "/procurement/orders/", "PO-202606-0001"));
+  ids.po = idFrom(
+    await hrefBySearch(
+      page,
+      "/procurement/orders",
+      "Search purchase orders",
+      "/procurement/orders/",
+      "PO-202606-0001",
+    ),
+  );
 
-  await go(page, "/procurement/requisitions");
   ids.requisition = idFrom(
-    await hrefFor(page, "/procurement/requisitions/", "PR-202607-0008"),
+    await hrefBySearch(
+      page,
+      "/procurement/requisitions",
+      "Search requisitions",
+      "/procurement/requisitions/",
+      "PR-202607-0008",
+    ),
   );
 
-  await go(page, "/inventory/products");
-  ids.product = idFrom(
-    await hrefFor(page, "/inventory/products/", "HND-TROLLEY"),
-  );
+  const product = (sku) =>
+    hrefBySearch(
+      page,
+      "/inventory/products",
+      "Search products",
+      "/inventory/products/",
+      sku,
+    ).then(idFrom);
+
+  ids.product = await product("HND-TROLLEY");
   // Two products below their reorder point, for the low-stock prefill on #03.
-  ids.lowStock = [
-    idFrom(await hrefFor(page, "/inventory/products/", "PKG-TAPE")),
-    idFrom(await hrefFor(page, "/inventory/products/", "PKG-BOX-S")),
-  ];
+  ids.lowStock = [await product("PKG-TAPE"), await product("PKG-BOX-S")];
 
-  await go(page, "/settings/users");
   // Budi's matrix is the interesting one: approver in procurement, viewer in
   // inventory, nothing in finance — three different levels in one screenshot.
   // The row's link wraps the name only — the email sits outside it.
-  ids.user = idFrom(await hrefFor(page, "/settings/users/", "Budi Santoso"));
+  ids.user = idFrom(
+    await hrefBySearch(
+      page,
+      "/settings/users",
+      "Search users",
+      "/settings/users/",
+      "Budi Santoso",
+    ),
+  );
 
   console.log("resolved ids:", JSON.stringify(ids, null, 2));
 }
@@ -198,7 +289,16 @@ const sessions = [
     account: "agus",
     viewport: DESKTOP,
     scheme: "dark",
-    shots: { "21-sidebar-no-finance": (p) => go(p, "/") },
+    shots: {
+      // With the account menu open. The header used to spell the levels out as
+      // badges along its width; since 2026-07-27 they live in this panel, and
+      // the panel is what now shows that Agus is an implicit admin in the two
+      // modules his workspace has — and that there is no Finance row at all.
+      "21-sidebar-no-finance": async (p) => {
+        await go(p, "/");
+        await openUserMenu(p, "Agus");
+      },
+    },
   },
 
   {
@@ -218,13 +318,46 @@ const sessions = [
 
   {
     // Budi, not Rina: #27 is meant to sit beside #22 and show *only* the theme
-    // changing. A different account would change the greeting, the widgets and
+    // changing. A different account would change the greeting, the tiles and
     // the sidebar too, and the pair would stop being a comparison.
     name: "budi · light",
     account: "budi",
     viewport: DESKTOP,
     scheme: "light",
-    shots: { "27-dashboard-light": (p) => go(p, "/") },
+    shots: {
+      "27-dashboard-light": (p) => go(p, "/"),
+      // The account menu, which is where identity went. Budi is the account
+      // worth opening it on: approver in Procurement, viewer in Inventory, and
+      // no Finance row, because a module you hold nothing in is omitted rather
+      // than listed as "none".
+      "30-account-menu": async (p) => {
+        await go(p, "/procurement/requisitions");
+        await openUserMenu(p, "Budi");
+      },
+    },
+  },
+
+  {
+    // The list chrome in light mode. This is not decoration: `bg-raised` is
+    // #FFFFFF in light by design, and four *recessed* things were using it
+    // against a surface that is also white — the table header band, the row
+    // hover, the sidebar's active item and the skeleton bars. All four were
+    // invisible, which made the loading state of every list an empty table.
+    name: "rina · light · the list chrome",
+    account: "rina",
+    viewport: DESKTOP,
+    scheme: "light",
+    shots: {
+      "28-orders-light": (p) => go(p, "/procurement/orders"),
+      // The filter dropdown open. A native <select> would have drawn this popup
+      // in the OS's colours, which on a screen whose only chrome is this row
+      // reads as a different program — so it is a listbox written out by hand.
+      "29-filter-open": async (p) => {
+        await go(p, "/procurement/requisitions");
+        await p.getByRole("combobox", { name: "Status" }).click();
+        await p.waitForTimeout(250);
+      },
+    },
   },
 
   {
@@ -248,6 +381,11 @@ const sessions = [
         );
         await settle(p);
       },
+      // The ledger is the only screen with three dropdowns, and so the only one
+      // where the filter row has to wrap at 360px: the search box takes a line,
+      // two dropdowns share the next, and the third drops below them. A fixed
+      // width here put every dropdown on a row of its own.
+      "31-mobile-filters": (p) => go(p, "/inventory/ledger"),
     },
   },
 
@@ -357,4 +495,14 @@ for (const session of sessions) {
 }
 
 await browser.close();
-console.log("\ndone -> shots/");
+
+// Only merge, never overwrite: a partial run (`node capture-erp.mjs 22`) must
+// not drop the fractions belonging to every shot it did not take.
+let previous = {};
+try {
+  previous = JSON.parse(readFileSync(CROPS, "utf8"));
+} catch {
+  /* first run */
+}
+writeFileSync(CROPS, JSON.stringify({ ...previous, ...crops }, null, 2) + "\n");
+console.log(`\ndone -> shots/   (crop fractions -> ${CROPS})`);

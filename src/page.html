@@ -1428,7 +1428,7 @@
            so every value here is kept short enough to survive the 4-up grid. -->
       <div><dt>Role</dt><dd>Solo — schema to deploy</dd></div>
       <div><dt>Stack</dt><dd>Go · PostgreSQL · React</dd></div>
-      <div><dt>Tests</dt><dd>376 backend · 102 web</dd></div>
+      <div><dt>Tests</dt><dd>376 backend · 148 web</dd></div>
       <div><dt>Status</dt><dd>Deploy-ready</dd></div>
     </dl>
 
@@ -1604,13 +1604,15 @@
             <span class="dots"><i></i><i></i><i></i></span>
             <span class="route">/procurement/requisitions</span>
           </div>
-          <img src="{{IMG:erp-02-requisitions}}" alt="Requisition list with status chips for draft, submitted, approved, rejected and cancelled; approved rows show the purchase order they produced." loading="lazy">
+          <img src="{{IMG:erp-02-requisitions}}" alt="Requisition list: a search box, a status filter and a supplier filter above a table of five requisitions with draft, submitted and approved status chips. The approved row carries the purchase order it produced. Below, a page-size picker reading 5 and numbered pages through thirteen entries." loading="lazy">
         </div>
         <figcaption>
-          <b>Requisitions.</b> The five states a requisition can hold. An approved
-          one carries the purchase order it produced underneath its number —
-          approval is what creates the order, so the two are never separately
-          entered.
+          <b>Requisitions.</b> An approved one carries the purchase order it
+          produced underneath its number — approval is what creates the order, so
+          the two are never separately entered. Every filter above the table is a
+          server parameter, never a pass over the rows already fetched: filtering
+          the page in front of you reports “3 drafts” to a workspace that has
+          forty.
         </figcaption>
       </figure>
 
@@ -1637,13 +1639,15 @@
             <span class="dots"><i></i><i></i><i></i></span>
             <span class="route">/procurement/requisitions/new</span>
           </div>
-          <img src="{{IMG:erp-03-requisition-new}}" alt="New requisition form with warehouse and supplier selected and two product lines pre-filled from the dashboard's low-stock shortcut." loading="lazy">
+          <img src="{{IMG:erp-03-requisition-new}}" alt="New requisition form with warehouse and supplier selected and two product lines, PKG-TAPE for 60 and PKG-BOX-S for 120, pre-filled from the low-stock banner on the stock screen." loading="lazy">
         </div>
         <figcaption>
-          <b>Raising one.</b> Lines arrive pre-filled from the dashboard's low-stock
-          shortcut. Leaving unit cost blank inherits the product's standard cost,
-          which then carries all the way through to the value posted into Inventory
-          and Finance when the goods actually turn up.
+          <b>Raising one.</b> The two lines arrived pre-filled, at the quantities
+          each product is short by, from the low-stock banner on the stock screen
+          — the shortfalls were computed by the database, not by this form.
+          Leaving unit cost blank inherits the product's standard cost, which then
+          carries all the way through to the value posted into Inventory and
+          Finance when the goods actually turn up.
         </figcaption>
       </figure>
 
@@ -1656,13 +1660,14 @@
               <span class="dots"><i></i><i></i><i></i></span>
               <span class="route">/inventory/stock</span>
             </div>
-            <img src="{{IMG:erp-09-stock}}" alt="Stock on hand per product and warehouse, with a banner listing three products below their reorder point, and a deleted product still showing its remaining stock." loading="lazy">
+            <img src="{{IMG:erp-09-stock}}" alt="Stock on hand per product and warehouse, under a banner naming three products below their reorder point with how far short each one is, and a Create requisition button." loading="lazy">
           </div>
           <figcaption>
-            <b>Stock on hand.</b> A database view over the ledger, not a table.
-            <span class="mono">OFF-LABEL</span> is marked deleted and still shows
-            its 30 rolls — a product removed from the catalogue is still a product
-            with stock and a history.
+            <b>Stock on hand.</b> A database view over the ledger, not a table —
+            there is no on-hand column anywhere in the schema. The banner names
+            what is short and by how much, both computed in SQL, and
+            <em>Create requisition</em> carries those shortfalls straight into the
+            form above.
           </figcaption>
         </figure>
 
@@ -1689,13 +1694,15 @@
             <span class="dots"><i></i><i></i><i></i></span>
             <span class="route">/inventory/products</span>
           </div>
-          <img src="{{IMG:erp-12-products}}" alt="Product list with SKU, on-hand quantity, reorder point and standard cost; three products carry a below-reorder-point badge and there is a show-deleted toggle." loading="lazy">
+          <img src="{{IMG:erp-12-products}}" alt="Product list with SKU, on-hand quantity, reorder point and standard cost. HND-TROLLEY carries a below-reorder-point badge, OFF-TONER is marked discontinued, and there is a show-deleted toggle." loading="lazy">
         </div>
         <figcaption>
-          <b>Products.</b> Three sit below their reorder point — flagged against an
-          on-hand quantity that is itself derived from the ledger. The
+          <b>Products.</b> <span class="mono">HND-TROLLEY</span> is flagged below
+          its reorder point — against an on-hand quantity that is itself derived
+          from the ledger, so the badge cannot disagree with the stock screen. The
           <em>Show deleted</em> toggle exists because deletion here is a flag, not
-          a removal.
+          a removal: nothing in this application issues a
+          <span class="mono">DELETE</span>.
         </figcaption>
       </figure>
 
@@ -1759,16 +1766,16 @@
             <span class="dots"><i></i><i></i><i></i></span>
             <span class="route">/ · signed in as Bahari's administrator</span>
           </div>
-          <img src="{{IMG:erp-21-sidebar-no-finance}}" alt="The Bahari Logistics dashboard: the sidebar lists Dashboard, Procurement, Inventory and Users, with no Finance link, and the header shows only Proc admin and Inve admin badges." loading="lazy">
+          <img src="{{IMG:erp-21-sidebar-no-finance}}" alt="The Bahari Logistics dashboard with the account menu open: it names Agus Pratama, Bahari Logistics, admin, and lists Procurement admin and Inventory admin with no Finance row at all. The sidebar lists Dashboard, Procurement, Inventory and Users, and no Finance." loading="lazy">
         </div>
         <figcaption>
           <b>The same rule from inside.</b> Agus is Bahari's administrator —
-          implicitly an admin in every module his workspace has, as the two badges
-          in the header show. There is still no Finance link, because his workspace
-          isn't entitled to the module. This is <em>entitlement</em>, not
-          permission: no role level anyone could grant him would produce that link.
-          It is also a different workspace's data entirely — different products,
-          different people, same tables.
+          implicitly an admin in every module his workspace has, which is what the
+          open account menu lists. There is no Finance row in it and no Finance
+          link in the sidebar, because his workspace isn't entitled to the module.
+          This is <em>entitlement</em>, not permission: no role level anyone could
+          grant him would produce that link. It is also a different workspace's
+          data entirely — different products, different people, same tables.
         </figcaption>
       </figure>
 
@@ -1789,6 +1796,74 @@
         </figcaption>
       </figure>
 
+      <h3 class="sub">The chrome every screen shares</h3>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/procurement/orders · light</span>
+          </div>
+          <img src="{{IMG:erp-28-orders-light}}" alt="The purchase order list in light theme: a search box and two filter dropdowns above a table with a tinted header band, and below it a page-size picker, a range sentence reading 1 to 5 of 6 entries, and numbered page buttons." loading="lazy">
+        </div>
+        <figcaption>
+          <b>One list, and every list.</b> Ten screens share this shell: a search
+          box that takes the slack, dropdowns that hold their width, a tinted
+          header band, and a pagination bar with a page-size picker and numbered
+          pages. The bar is drawn even when there is only one page, with Previous
+          and Next disabled — a control that says what it is beats an empty half
+          of a row. Light mode is where this cost the most work: the theme's
+          <em>raised</em> surface is pure white by design, and four
+          <em>recessed</em> things had been borrowing it — the header band, the row
+          hover, the sidebar's active item and the loading skeleton. All four were
+          white on white, which made the loading state of every list an empty
+          table. Recessed is a different job from elevated, so it got its own
+          token.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">/procurement/requisitions · light</span>
+          </div>
+          <img src="{{IMG:erp-29-filter-open}}" alt="The status filter open on the requisition list, listing All statuses, Draft, Submitted, Approved, Rejected and Cancelled in the application's own colours." loading="lazy">
+        </div>
+        <figcaption>
+          <b>The five states, and a deliberate cost.</b> This is not a
+          <span class="mono">&lt;select&gt;</span>. A native one would have been
+          free and would have inherited its roles, keyboard handling and focus
+          behaviour from the platform — but its popup is drawn by the operating
+          system, and on a screen whose only chrome is this row an OS-coloured
+          menu reads as a different program. So the keyboard is written out:
+          arrows and Home/End move, Enter picks, Escape cancels and restores
+          focus, and focus never leaves the trigger —
+          <span class="mono">aria-activedescendant</span> is what moves. The
+          page-size picker beside the table is still a native select, because
+          three digits in a corner is not the primary control on the screen.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="shot-frame">
+          <div class="shot-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="route">the account menu</span>
+          </div>
+          <img src="{{IMG:erp-30-account-menu}}" alt="The account menu open, showing Budi Santoso, his email, Nusantara Retail with the staff role, then Procurement approver and Inventory viewer, and a Sign out item. There is no Finance row." loading="lazy">
+        </div>
+        <figcaption>
+          <b>Identity, behind one control.</b> The header used to spell this out
+          along its width, which left the middle empty on a desktop and wrapped
+          onto a second row on a phone. The workspace name stayed on the bar and
+          the person's name did not — they are different things: the workspace
+          says which set of books every screen below is showing, and it changes
+          what the data <em>means</em>. Budi holds nothing in Finance, so Finance
+          is absent from the list rather than present and reading “none”.
+        </figcaption>
+      </figure>
+
       <h3 class="sub">Theme, and the phone</h3>
 
       <div class="shot-grid">
@@ -1798,12 +1873,16 @@
               <span class="dots"><i></i><i></i><i></i></span>
               <span class="route">/ · dark</span>
             </div>
-            <img src="{{IMG:erp-22-dashboard}}" alt="The dashboard in dark theme: open purchase orders, low stock, an approval queue with approve and reject buttons, and recent stock activity." loading="lazy">
+            <img src="{{IMG:erp-22-dashboard}}" alt="The dashboard in dark theme: three stat tiles reading Awaiting approval 3, Below reorder point 3 and Open purchase orders 3, each with a supporting fact, above a table of recent stock movements." loading="lazy">
           </div>
           <figcaption>
-            <b>Dashboard.</b> Open orders, low stock, recent movement, and the
-            approval queue with its two-button decision — the approver's whole job
-            without leaving the page.
+            <b>Dashboard.</b> Three numbers on one baseline, then the movements.
+            The earlier version put each figure inside its own card in one of two
+            columns, which left the three numbers a reader actually scans for at
+            three different heights — the one thing a dashboard must not do. Every
+            tile carries a fact rather than a bare figure: <em>which</em> product
+            is short and by how much, what the open orders are worth, whether the
+            approvals are yours to decide. Each is a link into the list it counts.
           </figcaption>
         </figure>
 
@@ -1817,8 +1896,10 @@
           </div>
           <figcaption>
             <b>The same screen, light.</b> Same account, same data — only the theme
-            differs. Both are first-class and the default follows the operating
-            system.
+            differs. The control is three states, not a switch: light, dark, and
+            follow the system, which is the default. A two-way flip cannot express
+            the third, so the first press would quietly opt you out of following
+            the OS for good, with nothing on screen to say so.
           </figcaption>
         </figure>
       </div>
@@ -1830,11 +1911,13 @@
               <span class="dots"><i></i><i></i><i></i></span>
               <span class="route">/ · 360px</span>
             </div>
-            <img src="{{IMG:erp-24-mobile-dashboard}}" alt="The dashboard at 360 pixels wide, with widgets stacked and a four-item bottom tab bar." loading="lazy">
+            <img src="{{IMG:erp-24-mobile-dashboard}}" alt="The dashboard at 360 pixels wide: the three stat tiles stacked into one column at full width, and a four-item bottom tab bar." loading="lazy">
           </div>
           <figcaption>
-            <b>Dashboard at 360px.</b> The sidebar becomes a bottom tab bar within
-            thumb reach.
+            <b>Dashboard at 360px.</b> The tiles stack into one column and keep
+            their order — which is by urgency, and fixed, so it reads the same
+            whichever subset your entitlements earn you. The sidebar becomes a
+            bottom tab bar within thumb reach.
           </figcaption>
         </figure>
 
@@ -1867,6 +1950,24 @@
             promise sits next to the button rather than two screens above it.
           </figcaption>
         </figure>
+
+        <figure class="shot">
+          <div class="shot-frame">
+            <div class="shot-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="route">/inventory/ledger · 360px</span>
+            </div>
+            <img src="{{IMG:erp-31-mobile-filters}}" alt="The stock ledger at 360 pixels: the search box on its own line, two filter dropdowns sharing the next, and the third dropdown wrapped onto a line below them." loading="lazy">
+          </div>
+          <figcaption>
+            <b>Four filters, three lines.</b> The ledger is the only screen with
+            three dropdowns, so it is the only one where the row has to wrap: the
+            search box takes a line, two dropdowns share the next, and the third
+            drops below. Below the small breakpoint the dropdowns give up their
+            fixed width and share what is there — pinning it put every one of them
+            on a row of its own and pushed the table three rows down the screen.
+          </figcaption>
+        </figure>
       </div>
 
     </div>
@@ -1888,7 +1989,7 @@
 
     <dl class="stats">
       <div><b>376</b><span>Backend tests</span></div>
-      <div><b>102</b><span>Frontend tests</span></div>
+      <div><b>148</b><span>Frontend tests</span></div>
       <div><b>14</b><span>Tables under RLS</span></div>
       <div><b>6</b><span>Migrations</span></div>
     </dl>
@@ -2194,7 +2295,7 @@
       </div>
       <div class="panel stack-s">
         <h3 class="sub">Tests &amp; CI</h3>
-        <p style="font-size:.9rem; color:var(--muted);">376 backend tests against real PostgreSQL in containers and 102 frontend tests, run by GitHub Actions on every push and pull request — both, because a green pull request that goes red on merge is a signal nobody sees.</p>
+        <p style="font-size:.9rem; color:var(--muted);">376 backend tests against real PostgreSQL in containers and 148 frontend tests, run by GitHub Actions on every push and pull request — both, because a green pull request that goes red on merge is a signal nobody sees.</p>
       </div>
       <div class="panel stack-s">
         <h3 class="sub">Operability</h3>
@@ -2239,25 +2340,24 @@
         <li><strong>Reversal documents.</strong> Ledger corrections are currently new adjustment entries with a note. A first-class reversal that points at what it reverses is the difference between a correction and an explanation.</li>
         <li>
           <strong>Make the desktop screens as capable as the API behind them.</strong>
-          The clearest weakness in the product, and the gaps all have the same
-          shape — the server already does the work, and the interface never asks
-          for it. <em>Sorting:</em> every list endpoint sorts, by an allowlisted
-          column with a tie-broken <span class="mono">ORDER BY</span> so rows
-          cannot swap between pages — but no table sends a
-          <span class="mono">sort</span> parameter and no column header is
-          clickable, so a list cannot be reordered from the screen at all.
-          <em>Addressability:</em> page, search, status and supplier live in
-          component state rather than in the URL, so a filtered view cannot be
-          bookmarked, shared or recovered with the back button — even though the
-          receipt confirmation panel's <span class="mono">?sourceId=</span> links
-          already prove the pattern in the one place it mattered most.
-          <em>Density:</em> the layout switches between phone and desktop and
-          offers nothing in between, so a wide screen shows about ten rows of a
-          twenty-five-row page and leaves a third of its width empty. Bulk
-          actions, keyboard navigation and saved filter views belong in the same
-          pass. Paging itself is already server-side, with a bounded page size
-          and a mandatory total — this is the front end catching up with a
-          backend that is ahead of it.
+          The clearest remaining weakness, and the gaps all have the same shape —
+          the server already does the work, and the interface never asks for it.
+          <em>Sorting:</em> every list endpoint sorts, by an allowlisted column
+          with a tie-broken <span class="mono">ORDER BY</span> so rows cannot swap
+          between pages — but each screen sends one fixed order and no column
+          header is clickable, so a list cannot be reordered by the person reading
+          it. <em>Addressability:</em> search, supplier and the page number live in
+          component state rather than in the URL, so a narrowed view cannot be
+          bookmarked, shared or recovered with the back button. Two places already
+          prove the pattern: the confirmation panel's
+          <span class="mono">?sourceId=</span> links, and the dashboard tiles,
+          whose <span class="mono">?status=</span> the requisition list now reads
+          on arrival — it is seeded from the URL, not bound to it, so changing the
+          dropdown afterwards still does not rewrite the address. <em>Density:</em>
+          the layout switches between phone and desktop and offers nothing in
+          between, so a wide screen leaves a third of its width empty whatever
+          page size is chosen. Bulk actions, keyboard navigation and saved filter
+          views belong in the same pass.
         </li>
         <li><strong>Approvals beyond one level.</strong> Value thresholds, delegation, and multi-step chains — the three things every real procurement department asks for immediately.</li>
         <li><strong>Finance past the stub.</strong> Invoicing, the payment cycle, and period close. The posting side already works; what's missing is everything that happens after.</li>
