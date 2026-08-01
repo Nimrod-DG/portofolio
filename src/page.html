@@ -2057,7 +2057,7 @@
               <div class="node">Services <small>procurement · inventory · finance</small></div>
             </div>
           </div>
-          <div class="connector">every query inside a transaction · SET LOCAL app.current_tenant</div>
+          <div class="connector">every query inside a transaction · set_config(..., true)</div>
           <div class="tier">
             <div class="tier-label"><span>Data</span><span>PostgreSQL 17</span></div>
             <div class="nodes">
@@ -2087,7 +2087,7 @@
       <ul class="ticks">
         <li><strong>The token is verified for its UID, and nothing else.</strong> A Firebase ID token proves who signed in. It is never read for roles or tenancy.</li>
         <li><strong>Identity, tenant and roles are read from the database, every request.</strong> Not from a token claim — a claim is a snapshot, and it keeps asserting what was true when it was minted long after an administrator has revoked the access.</li>
-        <li><strong>The handler runs inside a transaction that issues <span class="mono">SET LOCAL app.current_tenant</span>.</strong> <span class="mono">SET LOCAL</span>, never plain <span class="mono">SET</span>: a session-scoped setting outlives the transaction and would hand the tenant context to whichever request next borrowed that pooled connection.</li>
+        <li><strong>The handler runs inside a transaction that sets <span class="mono">app.current_tenant</span> for that transaction only, via <span class="mono">set_config(..., true)</span>.</strong> The function form is deliberate, because <span class="mono">SET</span> cannot take a bind parameter and the alternative is concatenating a UUID into the most security-critical statement in the system. Transaction-scoped, never session-scoped: a session-scoped setting outlives the transaction and would hand the tenant context to whichever request next borrowed that pooled connection.</li>
         <li><strong>Fourteen tables have row-level security enabled <em>and forced</em>.</strong> The policy compares each row's tenant to that setting. <span class="mono">FORCE</span> is the part people miss — without it the table's owner bypasses the policy entirely, which silently defeats the mechanism in local development, where you are usually connected as the owner.</li>
         <li><strong>Both views are <span class="mono">security_invoker</span>.</strong> By default a view executes with its <em>owner's</em> privileges, which means a view over protected tables cheerfully returns every tenant's rows to everybody.</li>
         <li><strong>No application role holds <span class="mono">BYPASSRLS</span> or <span class="mono">SUPERUSER</span>.</strong> There is a checked-in verifier that asserts this against a live database — because a role created through a hosting provider's web console quietly gets that privilege, and nothing looks wrong afterwards.</li>
@@ -2179,11 +2179,9 @@
       <h3 class="sub">One transaction, three modules — and what happens when it is sent twice</h3>
       <p class="body-text">
         Posting a goods receipt writes three things: the receipt itself, the stock
-        ledger rows, and the journal entry. All three happen in one transaction, in
-        that order, and the order matters — the journal entry is valued from what
-        the ledger rows recorded, so it cannot be written first. That ordering has
-        a test of its own, because a refactor that shuffled it would still pass
-        every other test in the suite.
+        ledger rows, and the journal entry — all in one transaction. The ledger
+        rows and the journal entry are each derived in SQL from the receipt lines,
+        so neither can disagree with what was actually received.
       </p>
       <p class="body-text">
         The harder problem is the retry. Somebody receives a delivery on a phone at
@@ -2208,7 +2206,7 @@
       </p>
       <ul class="ticks">
         <li><strong>Before doing anything else.</strong> This catches the ordinary case — the first request finished, and the user pressed the button again.</li>
-        <li><strong>Again, after locking the order lines.</strong> A retry already in flight can finish while this request is waiting for that lock. Without the second look, this request would then measure the delivery against quantities its own duplicate had just recorded, and reject it as an over-receipt — telling somebody to go and correct a quantity that was in fact recorded perfectly a moment earlier. A test is named for this case, and it failed on exactly that misleading error before the second check existed.</li>
+        <li><strong>Again, after locking the purchase order.</strong> A retry already in flight can finish while this request is waiting for that lock. Without the second look, this request would then measure the delivery against quantities its own duplicate had just recorded, and reject it as an over-receipt — telling somebody to go and correct a quantity that was in fact recorded perfectly a moment earlier. A test is named for this case, and it failed on exactly that misleading error before the second check existed.</li>
         <li><strong>At the insert itself.</strong> A unique constraint on the key has the last word, for a duplicate that commits in the sliver of time between the second check and this write.</li>
       </ul>
       <p class="body-text">
